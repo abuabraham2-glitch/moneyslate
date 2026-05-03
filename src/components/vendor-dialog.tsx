@@ -65,14 +65,21 @@ export function VendorDialog({
         toast.success("Vendor added");
       }
       qc.invalidateQueries({ queryKey: ["vendors"] });
+      setBaseline(form);
       onOpenChange(false);
     } catch (e: any) { toast.error(e.message); }
     finally { setSaving(false); }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
+      <DialogContent
+        className="max-w-xl max-h-[90vh] overflow-y-auto"
+        hideCloseButton
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader><DialogTitle>{editing ? "Edit Vendor" : "New Vendor"}</DialogTitle></DialogHeader>
         <div className="space-y-3 py-2">
           <Field label="Company name *">

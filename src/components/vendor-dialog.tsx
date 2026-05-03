@@ -28,13 +28,23 @@ export function VendorDialog({
   open, onOpenChange, initial,
 }: { open: boolean; onOpenChange: (v: boolean) => void; initial?: VendorForm | null }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState<VendorForm>(initial || { company_name: "", payment_terms: "Net 30" });
+  const initialForm = initial || { company_name: "", payment_terms: "Net 30" };
+  const [form, setForm] = useState<VendorForm>(initialForm);
+  const [baseline, setBaseline] = useState<VendorForm>(initialForm);
   const [saving, setSaving] = useState(false);
   const editing = !!initial?.id;
 
   useEffect(() => {
-    setForm(initial || { company_name: "", payment_terms: "Net 30" });
+    const f = initial || { company_name: "", payment_terms: "Net 30" };
+    setForm(f);
+    setBaseline(f);
   }, [initial, open]);
+
+  const isDirty = JSON.stringify(form) !== JSON.stringify(baseline);
+  const tryClose = () => {
+    if (isDirty && !confirm("Discard changes?")) return;
+    onOpenChange(false);
+  };
 
   const set = <K extends keyof VendorForm>(k: K, v: VendorForm[K]) =>
     setForm((prev) => ({ ...prev, [k]: v }));

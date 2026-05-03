@@ -53,13 +53,15 @@ export function VendorDialog({
     if (!form.company_name.trim()) { toast.error("Company name is required"); return; }
     setSaving(true);
     try {
+      const { id, company_name, contact_name, email, phone, street, city, state, zip, payment_terms, notes } = form;
+      const payload = { company_name, contact_name, email, phone, street, city, state, zip, payment_terms, notes };
       if (editing) {
-        const { error } = await supabase.from("vendors").update(form).eq("id", form.id!);
+        const { error } = await supabase.from("vendors").update(payload).eq("id", id!);
         if (error) throw error;
-        await logActivity("update", "vendor", form.id!, `Updated vendor ${form.company_name}`);
+        await logActivity("update", "vendor", id!, `Updated vendor ${company_name}`);
         toast.success("Vendor updated");
       } else {
-        const { data, error } = await supabase.from("vendors").insert(form).select().single();
+        const { data, error } = await supabase.from("vendors").insert(payload).select().single();
         if (error) throw error;
         await logActivity("create", "vendor", data.id, `Added vendor ${form.company_name}`);
         toast.success("Vendor added");

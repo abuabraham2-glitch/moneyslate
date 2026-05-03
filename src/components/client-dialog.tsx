@@ -59,9 +59,22 @@ export function ClientDialog({
     if (!form.company_name.trim()) { toast.error("Company name is required"); return; }
     setSaving(true);
     try {
-      const payload = { ...form };
+      const {
+        id, company_name, contact_name, contact_email, contact_phone,
+        billing_street, billing_city, billing_state, billing_zip,
+        shipping_street, shipping_city, shipping_state, shipping_zip,
+        ap_contact_name, ap_contact_email, ap_contact_phone,
+        payment_terms, notes,
+      } = form;
+      const payload = {
+        company_name, contact_name, contact_email, contact_phone,
+        billing_street, billing_city, billing_state, billing_zip,
+        shipping_street, shipping_city, shipping_state, shipping_zip,
+        ap_contact_name, ap_contact_email, ap_contact_phone,
+        payment_terms, notes,
+      };
       if (editing) {
-        const { error } = await supabase.from("clients").update(payload).eq("id", form.id!);
+        const { error } = await supabase.from("clients").update(payload).eq("id", id!);
         if (error) throw error;
         await logActivity("update", "client", form.id!, `Updated client ${form.company_name}`);
         toast.success("Client updated");

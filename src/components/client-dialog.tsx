@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import {
   Collapsible, CollapsibleTrigger, CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import { PhoneInput } from "@/components/phone-input";
+import { StateSelect } from "@/components/state-select";
 
 export type ClientForm = {
   id?: string;
@@ -36,10 +38,11 @@ export function ClientDialog({
   const [saving, setSaving] = useState(false);
   const editing = !!initial?.id;
 
-  // Reset when initial changes
-  useState(() => { setForm(initial || { company_name: "", payment_terms: "Net 30" }); });
+  useEffect(() => {
+    setForm(initial || { company_name: "", payment_terms: "Net 30" });
+  }, [initial, open]);
 
-  const set = (k: keyof ClientForm, v: any) => setForm({ ...form, [k]: v });
+  const set = (k: keyof ClientForm, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
 
   const save = async () => {
     if (!form.company_name.trim()) { toast.error("Company name is required"); return; }
@@ -74,14 +77,14 @@ export function ClientDialog({
             <Field label="Contact name"><Input value={form.contact_name || ""} onChange={(e) => set("contact_name", e.target.value)} /></Field>
             <Field label="Payment terms"><Input value={form.payment_terms || ""} onChange={(e) => set("payment_terms", e.target.value)} placeholder="Net 30" /></Field>
             <Field label="Contact email"><Input type="email" value={form.contact_email || ""} onChange={(e) => set("contact_email", e.target.value)} /></Field>
-            <Field label="Contact phone"><Input value={form.contact_phone || ""} onChange={(e) => set("contact_phone", e.target.value)} /></Field>
+            <Field label="Contact phone"><PhoneInput value={form.contact_phone || ""} onChange={(v) => set("contact_phone", v)} /></Field>
           </div>
 
           <Section title="Billing address">
             <Field label="Street"><Input value={form.billing_street || ""} onChange={(e) => set("billing_street", e.target.value)} /></Field>
             <div className="grid grid-cols-3 gap-3">
               <Field label="City"><Input value={form.billing_city || ""} onChange={(e) => set("billing_city", e.target.value)} /></Field>
-              <Field label="State"><Input value={form.billing_state || ""} onChange={(e) => set("billing_state", e.target.value)} /></Field>
+              <Field label="State"><StateSelect value={form.billing_state || ""} onChange={(v) => set("billing_state", v)} /></Field>
               <Field label="Zip"><Input value={form.billing_zip || ""} onChange={(e) => set("billing_zip", e.target.value)} /></Field>
             </div>
           </Section>
@@ -90,7 +93,7 @@ export function ClientDialog({
             <Field label="Street"><Input value={form.shipping_street || ""} onChange={(e) => set("shipping_street", e.target.value)} /></Field>
             <div className="grid grid-cols-3 gap-3">
               <Field label="City"><Input value={form.shipping_city || ""} onChange={(e) => set("shipping_city", e.target.value)} /></Field>
-              <Field label="State"><Input value={form.shipping_state || ""} onChange={(e) => set("shipping_state", e.target.value)} /></Field>
+              <Field label="State"><StateSelect value={form.shipping_state || ""} onChange={(v) => set("shipping_state", v)} /></Field>
               <Field label="Zip"><Input value={form.shipping_zip || ""} onChange={(e) => set("shipping_zip", e.target.value)} /></Field>
             </div>
           </Section>
@@ -98,7 +101,7 @@ export function ClientDialog({
           <Section title="Accounts Payable contact">
             <div className="grid grid-cols-2 gap-3">
               <Field label="Name"><Input value={form.ap_contact_name || ""} onChange={(e) => set("ap_contact_name", e.target.value)} /></Field>
-              <Field label="Phone"><Input value={form.ap_contact_phone || ""} onChange={(e) => set("ap_contact_phone", e.target.value)} /></Field>
+              <Field label="Phone"><PhoneInput value={form.ap_contact_phone || ""} onChange={(v) => set("ap_contact_phone", v)} /></Field>
               <div className="col-span-2"><Field label="Email"><Input type="email" value={form.ap_contact_email || ""} onChange={(e) => set("ap_contact_email", e.target.value)} /></Field></div>
             </div>
           </Section>

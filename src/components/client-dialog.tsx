@@ -126,7 +126,7 @@ export function ClientDialog({
           <Field label="Notes"><Textarea value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} rows={2} /></Field>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={tryClose}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
         </DialogFooter>
       </DialogContent>

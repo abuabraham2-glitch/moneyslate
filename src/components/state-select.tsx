@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 const US_STATES: { code: string; name: string }[] = [
@@ -22,9 +22,13 @@ export function StateSelect({
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState(value || "");
   const [highlight, setHighlight] = React.useState(0);
-  const listRef = React.useRef<HTMLDivElement>(null);
+  const anchorRef = React.useRef<HTMLDivElement>(null);
+  const [width, setWidth] = React.useState<number>();
 
   React.useEffect(() => { setQuery(value || ""); }, [value]);
+  React.useEffect(() => {
+    if (open && anchorRef.current) setWidth(anchorRef.current.offsetWidth);
+  }, [open]);
 
   const q = query.trim().toLowerCase();
   const filtered = q
@@ -55,34 +59,38 @@ export function StateSelect({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverAnchor asChild>
-        <Input
-          value={query}
-          placeholder="State"
-          maxLength={20}
-          onChange={(e) => {
-            const v = e.target.value.toUpperCase();
-            setQuery(v);
-            setOpen(true);
-            const exact = US_STATES.find((s) => s.code === v);
-            if (exact) onChange(exact.code);
-          }}
-          onFocus={() => setOpen(true)}
-          onBlur={() => {
-            const exact = US_STATES.find((s) => s.code.toLowerCase() === query.trim().toLowerCase());
-            if (exact) { onChange(exact.code); setQuery(exact.code); }
-            else setQuery(value || "");
-          }}
-          onKeyDown={onKeyDown}
-          className="h-9"
-        />
+        <div ref={anchorRef}>
+          <Input
+            value={query}
+            placeholder="State"
+            maxLength={20}
+            onChange={(e) => {
+              const v = e.target.value.toUpperCase();
+              setQuery(v);
+              setOpen(true);
+              const exact = US_STATES.find((s) => s.code === v);
+              if (exact) onChange(exact.code);
+            }}
+            onFocus={() => setOpen(true)}
+            onBlur={() => {
+              const exact = US_STATES.find((s) => s.code.toLowerCase() === query.trim().toLowerCase());
+              if (exact) { onChange(exact.code); setQuery(exact.code); }
+              else setQuery(value || "");
+            }}
+            onKeyDown={onKeyDown}
+            className="h-9"
+          />
+        </div>
       </PopoverAnchor>
-      <PopoverTrigger className="hidden" />
       <PopoverContent
-        className="w-[220px] p-0 max-h-64 overflow-auto"
+        side="bottom"
         align="start"
+        sideOffset={4}
+        style={width ? { width } : undefined}
+        className="p-0 max-h-64 overflow-auto z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div ref={listRef} className="py-1">
+        <div className="py-1">
           {filtered.length === 0 && (
             <div className="px-3 py-2 text-sm text-muted-foreground">No state.</div>
           )}

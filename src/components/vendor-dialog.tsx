@@ -100,7 +100,7 @@ export function VendorDialog({
           <Field label="Notes"><Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} /></Field>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={tryClose}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
         </DialogFooter>
       </DialogContent>

@@ -7,7 +7,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { StatusBadge } from "@/components/status-badge";
 import { ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/_app/vendors/$id")({ component: VendorDetail });
+export const Route = createFileRoute("/_app/vendors_/$id")({ component: VendorDetail });
 
 function VendorDetail() {
   const { id } = Route.useParams();

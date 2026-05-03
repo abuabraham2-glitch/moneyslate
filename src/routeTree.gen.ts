@@ -23,10 +23,10 @@ import { Route as AppExpensesRouteImport } from './routes/_app.expenses'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppClientsRouteImport } from './routes/_app.clients'
 import { Route as AppBillsRouteImport } from './routes/_app.bills'
-import { Route as AppVendorsIdRouteImport } from './routes/_app.vendors.$id'
+import { Route as AppVendorsIdRouteImport } from './routes/_app.vendors_.$id'
 import { Route as AppPurchaseOrdersIdRouteImport } from './routes/_app.purchase-orders.$id'
 import { Route as AppInvoicesIdRouteImport } from './routes/_app.invoices.$id'
-import { Route as AppClientsIdRouteImport } from './routes/_app.clients.$id'
+import { Route as AppClientsIdRouteImport } from './routes/_app.clients_.$id'
 import { Route as AppBillsIdRouteImport } from './routes/_app.bills.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -99,9 +99,9 @@ const AppBillsRoute = AppBillsRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppVendorsIdRoute = AppVendorsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppVendorsRoute,
+  id: '/vendors_/$id',
+  path: '/vendors/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppPurchaseOrdersIdRoute = AppPurchaseOrdersIdRouteImport.update({
   id: '/$id',
@@ -114,9 +114,9 @@ const AppInvoicesIdRoute = AppInvoicesIdRouteImport.update({
   getParentRoute: () => AppInvoicesRoute,
 } as any)
 const AppClientsIdRoute = AppClientsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppClientsRoute,
+  id: '/clients_/$id',
+  path: '/clients/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppBillsIdRoute = AppBillsIdRouteImport.update({
   id: '/$id',
@@ -128,7 +128,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRouteWithChildren
-  '/clients': typeof AppClientsRouteWithChildren
+  '/clients': typeof AppClientsRoute
   '/dashboard': typeof AppDashboardRoute
   '/expenses': typeof AppExpensesRoute
   '/invoices': typeof AppInvoicesRouteWithChildren
@@ -136,7 +136,7 @@ export interface FileRoutesByFullPath {
   '/reconciliation': typeof AppReconciliationRoute
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
-  '/vendors': typeof AppVendorsRouteWithChildren
+  '/vendors': typeof AppVendorsRoute
   '/api/command-center': typeof ApiCommandCenterRoute
   '/bills/$id': typeof AppBillsIdRoute
   '/clients/$id': typeof AppClientsIdRoute
@@ -148,7 +148,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRouteWithChildren
-  '/clients': typeof AppClientsRouteWithChildren
+  '/clients': typeof AppClientsRoute
   '/dashboard': typeof AppDashboardRoute
   '/expenses': typeof AppExpensesRoute
   '/invoices': typeof AppInvoicesRouteWithChildren
@@ -156,7 +156,7 @@ export interface FileRoutesByTo {
   '/reconciliation': typeof AppReconciliationRoute
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
-  '/vendors': typeof AppVendorsRouteWithChildren
+  '/vendors': typeof AppVendorsRoute
   '/api/command-center': typeof ApiCommandCenterRoute
   '/bills/$id': typeof AppBillsIdRoute
   '/clients/$id': typeof AppClientsIdRoute
@@ -170,7 +170,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/bills': typeof AppBillsRouteWithChildren
-  '/_app/clients': typeof AppClientsRouteWithChildren
+  '/_app/clients': typeof AppClientsRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/expenses': typeof AppExpensesRoute
   '/_app/invoices': typeof AppInvoicesRouteWithChildren
@@ -178,13 +178,13 @@ export interface FileRoutesById {
   '/_app/reconciliation': typeof AppReconciliationRoute
   '/_app/reports': typeof AppReportsRoute
   '/_app/settings': typeof AppSettingsRoute
-  '/_app/vendors': typeof AppVendorsRouteWithChildren
+  '/_app/vendors': typeof AppVendorsRoute
   '/api/command-center': typeof ApiCommandCenterRoute
   '/_app/bills/$id': typeof AppBillsIdRoute
-  '/_app/clients/$id': typeof AppClientsIdRoute
+  '/_app/clients_/$id': typeof AppClientsIdRoute
   '/_app/invoices/$id': typeof AppInvoicesIdRoute
   '/_app/purchase-orders/$id': typeof AppPurchaseOrdersIdRoute
-  '/_app/vendors/$id': typeof AppVendorsIdRoute
+  '/_app/vendors_/$id': typeof AppVendorsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -244,10 +244,10 @@ export interface FileRouteTypes {
     | '/_app/vendors'
     | '/api/command-center'
     | '/_app/bills/$id'
-    | '/_app/clients/$id'
+    | '/_app/clients_/$id'
     | '/_app/invoices/$id'
     | '/_app/purchase-orders/$id'
-    | '/_app/vendors/$id'
+    | '/_app/vendors_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -357,12 +357,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBillsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/vendors/$id': {
-      id: '/_app/vendors/$id'
-      path: '/$id'
+    '/_app/vendors_/$id': {
+      id: '/_app/vendors_/$id'
+      path: '/vendors/$id'
       fullPath: '/vendors/$id'
       preLoaderRoute: typeof AppVendorsIdRouteImport
-      parentRoute: typeof AppVendorsRoute
+      parentRoute: typeof AppRoute
     }
     '/_app/purchase-orders/$id': {
       id: '/_app/purchase-orders/$id'
@@ -378,12 +378,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInvoicesIdRouteImport
       parentRoute: typeof AppInvoicesRoute
     }
-    '/_app/clients/$id': {
-      id: '/_app/clients/$id'
-      path: '/$id'
+    '/_app/clients_/$id': {
+      id: '/_app/clients_/$id'
+      path: '/clients/$id'
       fullPath: '/clients/$id'
       preLoaderRoute: typeof AppClientsIdRouteImport
-      parentRoute: typeof AppClientsRoute
+      parentRoute: typeof AppRoute
     }
     '/_app/bills/$id': {
       id: '/_app/bills/$id'
@@ -405,18 +405,6 @@ const AppBillsRouteChildren: AppBillsRouteChildren = {
 
 const AppBillsRouteWithChildren = AppBillsRoute._addFileChildren(
   AppBillsRouteChildren,
-)
-
-interface AppClientsRouteChildren {
-  AppClientsIdRoute: typeof AppClientsIdRoute
-}
-
-const AppClientsRouteChildren: AppClientsRouteChildren = {
-  AppClientsIdRoute: AppClientsIdRoute,
-}
-
-const AppClientsRouteWithChildren = AppClientsRoute._addFileChildren(
-  AppClientsRouteChildren,
 )
 
 interface AppInvoicesRouteChildren {
@@ -442,21 +430,9 @@ const AppPurchaseOrdersRouteChildren: AppPurchaseOrdersRouteChildren = {
 const AppPurchaseOrdersRouteWithChildren =
   AppPurchaseOrdersRoute._addFileChildren(AppPurchaseOrdersRouteChildren)
 
-interface AppVendorsRouteChildren {
-  AppVendorsIdRoute: typeof AppVendorsIdRoute
-}
-
-const AppVendorsRouteChildren: AppVendorsRouteChildren = {
-  AppVendorsIdRoute: AppVendorsIdRoute,
-}
-
-const AppVendorsRouteWithChildren = AppVendorsRoute._addFileChildren(
-  AppVendorsRouteChildren,
-)
-
 interface AppRouteChildren {
   AppBillsRoute: typeof AppBillsRouteWithChildren
-  AppClientsRoute: typeof AppClientsRouteWithChildren
+  AppClientsRoute: typeof AppClientsRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppExpensesRoute: typeof AppExpensesRoute
   AppInvoicesRoute: typeof AppInvoicesRouteWithChildren
@@ -464,12 +440,14 @@ interface AppRouteChildren {
   AppReconciliationRoute: typeof AppReconciliationRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
-  AppVendorsRoute: typeof AppVendorsRouteWithChildren
+  AppVendorsRoute: typeof AppVendorsRoute
+  AppClientsIdRoute: typeof AppClientsIdRoute
+  AppVendorsIdRoute: typeof AppVendorsIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppBillsRoute: AppBillsRouteWithChildren,
-  AppClientsRoute: AppClientsRouteWithChildren,
+  AppClientsRoute: AppClientsRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppExpensesRoute: AppExpensesRoute,
   AppInvoicesRoute: AppInvoicesRouteWithChildren,
@@ -477,7 +455,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppReconciliationRoute: AppReconciliationRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
-  AppVendorsRoute: AppVendorsRouteWithChildren,
+  AppVendorsRoute: AppVendorsRoute,
+  AppClientsIdRoute: AppClientsIdRoute,
+  AppVendorsIdRoute: AppVendorsIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

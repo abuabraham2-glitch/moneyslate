@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { logActivity } from "@/lib/activity";
+import { PhoneInput } from "@/components/phone-input";
+import { StateSelect } from "@/components/state-select";
 
 export type VendorForm = {
   id?: string;
@@ -18,6 +20,10 @@ export type VendorForm = {
   notes?: string;
 };
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;
+}
+
 export function VendorDialog({
   open, onOpenChange, initial,
 }: { open: boolean; onOpenChange: (v: boolean) => void; initial?: VendorForm | null }) {
@@ -25,7 +31,13 @@ export function VendorDialog({
   const [form, setForm] = useState<VendorForm>(initial || { company_name: "", payment_terms: "Net 30" });
   const [saving, setSaving] = useState(false);
   const editing = !!initial?.id;
-  const set = (k: keyof VendorForm, v: any) => setForm({ ...form, [k]: v });
+
+  useEffect(() => {
+    setForm(initial || { company_name: "", payment_terms: "Net 30" });
+  }, [initial, open]);
+
+  const set = <K extends keyof VendorForm>(k: K, v: VendorForm[K]) =>
+    setForm((prev) => ({ ...prev, [k]: v }));
 
   const save = async () => {
     if (!form.company_name.trim()) { toast.error("Company name is required"); return; }
@@ -48,28 +60,27 @@ export function VendorDialog({
     finally { setSaving(false); }
   };
 
-  const F = ({ label, k, type = "text" }: { label: string; k: keyof VendorForm; type?: string }) => (
-    <div className="space-y-1.5"><Label className="text-xs">{label}</Label>
-      <Input type={type} value={(form as any)[k] || ""} onChange={(e) => set(k, e.target.value)} /></div>
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{editing ? "Edit Vendor" : "New Vendor"}</DialogTitle></DialogHeader>
         <div className="space-y-3 py-2">
-          <div className="space-y-1.5"><Label className="text-xs">Company name *</Label><Input value={form.company_name} onChange={(e) => set("company_name", e.target.value)} /></div>
+          <Field label="Company name *">
+            <Input value={form.company_name} onChange={(e) => set("company_name", e.target.value)} />
+          </Field>
           <div className="grid grid-cols-2 gap-3">
-            <F label="Contact name" k="contact_name" />
-            <F label="Payment terms" k="payment_terms" />
-            <F label="Email" k="email" type="email" />
-            <F label="Phone" k="phone" />
+            <Field label="Contact name"><Input value={form.contact_name || ""} onChange={(e) => set("contact_name", e.target.value)} /></Field>
+            <Field label="Payment terms"><Input value={form.payment_terms || ""} onChange={(e) => set("payment_terms", e.target.value)} /></Field>
+            <Field label="Email"><Input type="email" value={form.email || ""} onChange={(e) => set("email", e.target.value)} /></Field>
+            <Field label="Phone"><PhoneInput value={form.phone || ""} onChange={(v) => set("phone", v)} /></Field>
           </div>
-          <F label="Street" k="street" />
+          <Field label="Street"><Input value={form.street || ""} onChange={(e) => set("street", e.target.value)} /></Field>
           <div className="grid grid-cols-3 gap-3">
-            <F label="City" k="city" /><F label="State" k="state" /><F label="Zip" k="zip" />
+            <Field label="City"><Input value={form.city || ""} onChange={(e) => set("city", e.target.value)} /></Field>
+            <Field label="State"><StateSelect value={form.state || ""} onChange={(v) => set("state", v)} /></Field>
+            <Field label="Zip"><Input value={form.zip || ""} onChange={(e) => set("zip", e.target.value)} /></Field>
           </div>
-          <div className="space-y-1.5"><Label className="text-xs">Notes</Label><Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} /></div>
+          <Field label="Notes"><Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} /></Field>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

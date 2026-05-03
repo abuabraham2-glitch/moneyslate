@@ -34,13 +34,24 @@ export function ClientDialog({
   initial?: ClientForm | null;
 }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState<ClientForm>(initial || { company_name: "", payment_terms: "Net 30" });
+  const initialForm = initial || { company_name: "", payment_terms: "Net 30" };
+  const [form, setForm] = useState<ClientForm>(initialForm);
+  const [baseline, setBaseline] = useState<ClientForm>(initialForm);
   const [saving, setSaving] = useState(false);
   const editing = !!initial?.id;
 
   useEffect(() => {
-    setForm(initial || { company_name: "", payment_terms: "Net 30" });
+    const f = initial || { company_name: "", payment_terms: "Net 30" };
+    setForm(f);
+    setBaseline(f);
   }, [initial, open]);
+
+  const isDirty = JSON.stringify(form) !== JSON.stringify(baseline);
+
+  const tryClose = () => {
+    if (isDirty && !confirm("Discard changes?")) return;
+    onOpenChange(false);
+  };
 
   const set = (k: keyof ClientForm, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
 

@@ -34,13 +34,24 @@ export function ClientDialog({
   initial?: ClientForm | null;
 }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState<ClientForm>(initial || { company_name: "", payment_terms: "Net 30" });
+  const initialForm = initial || { company_name: "", payment_terms: "Net 30" };
+  const [form, setForm] = useState<ClientForm>(initialForm);
+  const [baseline, setBaseline] = useState<ClientForm>(initialForm);
   const [saving, setSaving] = useState(false);
   const editing = !!initial?.id;
 
   useEffect(() => {
-    setForm(initial || { company_name: "", payment_terms: "Net 30" });
+    const f = initial || { company_name: "", payment_terms: "Net 30" };
+    setForm(f);
+    setBaseline(f);
   }, [initial, open]);
+
+  const isDirty = JSON.stringify(form) !== JSON.stringify(baseline);
+
+  const tryClose = () => {
+    if (isDirty && !confirm("Discard changes?")) return;
+    onOpenChange(false);
+  };
 
   const set = (k: keyof ClientForm, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
 
@@ -61,6 +72,7 @@ export function ClientDialog({
         toast.success("Client added");
       }
       qc.invalidateQueries({ queryKey: ["clients"] });
+      setBaseline(form);
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);
@@ -68,8 +80,14 @@ export function ClientDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        hideCloseButton
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader><DialogTitle>{editing ? "Edit Client" : "New Client"}</DialogTitle></DialogHeader>
         <div className="space-y-4 py-2">
           <Field label="Company name *"><Input value={form.company_name} onChange={(e) => set("company_name", e.target.value)} /></Field>
@@ -109,7 +127,7 @@ export function ClientDialog({
           <Field label="Notes"><Textarea value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} rows={2} /></Field>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={tryClose}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
         </DialogFooter>
       </DialogContent>

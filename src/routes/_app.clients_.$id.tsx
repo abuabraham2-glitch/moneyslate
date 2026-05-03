@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_app/clients/$id")({ component: ClientDetail });
+export const Route = createFileRoute("/_app/clients_/$id")({ component: ClientDetail });
 
 function ClientDetail() {
   const { id } = Route.useParams();

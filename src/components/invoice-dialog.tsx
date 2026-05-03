@@ -158,8 +158,8 @@ export function InvoiceDialog({
       client_po_number: form.client_po_number, payment_terms: form.payment_terms, notes: form.notes,
       subtotal, tax_amount: Number(form.tax_amount || 0), total,
       party: {
-        name: c?.company_name || "", contact: c?.contact_name, email: c?.contact_email, phone: c?.contact_phone,
-        street: c?.billing_street, city: c?.billing_city, state: c?.billing_state, zip: c?.billing_zip,
+        name: c?.company_name || "", contact: c?.contact_name ?? undefined, email: c?.contact_email ?? undefined, phone: c?.contact_phone ?? undefined,
+        street: c?.billing_street ?? undefined, city: c?.billing_city ?? undefined, state: c?.billing_state ?? undefined, zip: c?.billing_zip ?? undefined,
       },
       lines: lines.map((l) => ({ description: l.description, quantity: Number(l.quantity), price: Number(l.unit_price ?? 0), total: Number(l.line_total) })),
     }, settings || {});

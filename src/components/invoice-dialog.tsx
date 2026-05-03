@@ -162,7 +162,7 @@ export function InvoiceDialog({
         street: c?.billing_street ?? undefined, city: c?.billing_city ?? undefined, state: c?.billing_state ?? undefined, zip: c?.billing_zip ?? undefined,
       },
       lines: lines.map((l) => ({ description: l.description, quantity: Number(l.quantity), price: Number(l.unit_price ?? 0), total: Number(l.line_total) })),
-    }, settings || {});
+    }, (settings || {}) as any);
   };
 
   const handlePreviewPdf = async () => {

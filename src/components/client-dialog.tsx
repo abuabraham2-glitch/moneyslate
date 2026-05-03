@@ -72,6 +72,7 @@ export function ClientDialog({
         toast.success("Client added");
       }
       qc.invalidateQueries({ queryKey: ["clients"] });
+      setBaseline(form);
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);

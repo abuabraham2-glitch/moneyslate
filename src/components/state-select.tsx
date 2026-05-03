@@ -1,56 +1,108 @@
 import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const US_STATES = [
-  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
-  "KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
-  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT",
-  "VA","WA","WV","WI","WY",
-];
+const US_STATES: { code: string; name: string }[] = [
+  ["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],
+  ["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["FL","Florida"],["GA","Georgia"],
+  ["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],
+  ["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],
+  ["MA","Massachusetts"],["MI","Michigan"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],
+  ["MT","Montana"],["NE","Nebraska"],["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],
+  ["NM","New Mexico"],["NY","New York"],["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],
+  ["OK","Oklahoma"],["OR","Oregon"],["PA","Pennsylvania"],["RI","Rhode Island"],["SC","South Carolina"],
+  ["SD","South Dakota"],["TN","Tennessee"],["TX","Texas"],["UT","Utah"],["VT","Vermont"],
+  ["VA","Virginia"],["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"],
+].map(([code, name]) => ({ code, name }));
 
 export function StateSelect({
   value, onChange,
 }: { value?: string; onChange: (v: string) => void }) {
   const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState(value || "");
+  const [highlight, setHighlight] = React.useState(0);
+  const listRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => { setQuery(value || ""); }, [value]);
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? US_STATES.filter((s) => s.code.toLowerCase().startsWith(q) || s.name.toLowerCase().includes(q))
+    : US_STATES;
+
+  React.useEffect(() => { setHighlight(0); }, [query, open]);
+
+  const commit = (code: string) => {
+    onChange(code);
+    setQuery(code);
+    setOpen(false);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setHighlight((h) => Math.min(h + 1, filtered.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      const exact = US_STATES.find((s) => s.code.toLowerCase() === q);
+      if (exact) commit(exact.code);
+      else if (filtered[highlight]) commit(filtered[highlight].code);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between font-normal h-9"
-        >
-          {value || <span className="text-muted-foreground">State</span>}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[180px] p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search state…" />
-          <CommandList>
-            <CommandEmpty>No state.</CommandEmpty>
-            <CommandGroup>
-              {US_STATES.map((s) => (
-                <CommandItem
-                  key={s}
-                  value={s}
-                  onSelect={(v) => { onChange(v.toUpperCase()); setOpen(false); }}
-                >
-                  <Check className={cn("mr-2 h-4 w-4", value === s ? "opacity-100" : "opacity-0")} />
-                  {s}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+      <PopoverAnchor asChild>
+        <Input
+          value={query}
+          placeholder="State"
+          maxLength={20}
+          onChange={(e) => {
+            const v = e.target.value.toUpperCase();
+            setQuery(v);
+            setOpen(true);
+            const exact = US_STATES.find((s) => s.code === v);
+            if (exact) onChange(exact.code);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            const exact = US_STATES.find((s) => s.code.toLowerCase() === query.trim().toLowerCase());
+            if (exact) { onChange(exact.code); setQuery(exact.code); }
+            else setQuery(value || "");
+          }}
+          onKeyDown={onKeyDown}
+          className="h-9"
+        />
+      </PopoverAnchor>
+      <PopoverTrigger className="hidden" />
+      <PopoverContent
+        className="w-[220px] p-0 max-h-64 overflow-auto"
+        align="start"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div ref={listRef} className="py-1">
+          {filtered.length === 0 && (
+            <div className="px-3 py-2 text-sm text-muted-foreground">No state.</div>
+          )}
+          {filtered.map((s, i) => (
+            <button
+              key={s.code}
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); commit(s.code); }}
+              onMouseEnter={() => setHighlight(i)}
+              className={cn(
+                "w-full text-left px-3 py-1.5 text-sm flex items-center justify-between",
+                i === highlight ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                value === s.code && "font-medium",
+              )}
+            >
+              <span>{s.name}</span>
+              <span className="text-xs text-muted-foreground">{s.code}</span>
+            </button>
+          ))}
+        </div>
       </PopoverContent>
     </Popover>
   );

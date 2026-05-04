@@ -78,13 +78,18 @@ export function POdialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
-        // Default ship-to from company address
-        const addr = (settings?.company_address || "").split("\n");
+        // Default Bill To from company settings; auto-fill internal PO #
+        const parsed = parseCompanyAddress(settings?.company_address || "");
+        let internal = "";
+        try { internal = await getNextDocumentNumber("internal_po"); } catch {}
         const f: POForm = {
           vendor_id: null, issue_date: today,
+          internal_po_number: internal,
           ship_to_name: settings?.company_name || "",
-          ship_to_street: addr[0] || "",
-          ship_to_city: "", ship_to_state: "", ship_to_zip: "",
+          ship_to_street: parsed.street,
+          ship_to_city: parsed.city,
+          ship_to_state: parsed.state,
+          ship_to_zip: parsed.zip,
         };
         setForm(f);
         const initialLines = normalizeLineItemsForEditor([], "unit_cost");

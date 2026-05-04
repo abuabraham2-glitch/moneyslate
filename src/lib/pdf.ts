@@ -41,6 +41,7 @@ type Doc = {
     zip?: string;
   };
   lines: Array<{ description: string; quantity: number; price: number; total: number }>;
+  paidStamp?: boolean;
 };
 
 export function generatePDF(doc: Doc, settings: Settings): jsPDF {
@@ -152,6 +153,20 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
     pdf.setFont("helvetica", "normal");
     const wrapped = pdf.splitTextToSize(doc.notes, 180);
     pdf.text(wrapped, 15, by);
+  }
+
+  if (isInvoice && doc.paidStamp) {
+    if (typeof (pdf as any).GState === "function") {
+      pdf.setGState(new (pdf as any).GState({ opacity: 0.35 }));
+    }
+    pdf.setTextColor(22, 163, 74);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(120);
+    pdf.text("PAID", 105, 155, { align: "center", angle: -35 });
+    if (typeof (pdf as any).GState === "function") {
+      pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
+    }
+    pdf.setTextColor(0, 0, 0);
   }
 
   return pdf;

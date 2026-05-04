@@ -16,6 +16,8 @@ import { sendDocumentEmail } from "@/lib/send";
 import { logActivity } from "@/lib/activity";
 import { getNextDocumentNumber } from "@/lib/document-number";
 import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
+import { shouldAllowDialogClose } from "@/lib/dialog";
+import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 
 export type InvoiceForm = {
   id?: string;
@@ -46,6 +48,8 @@ export function InvoiceDialog({
   const [lines, setLines] = useState<LineItem[]>([]);
   const [baseline, setBaseline] = useState("");
   const [saving, setSaving] = useState(false);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-mini"],
@@ -88,7 +92,7 @@ export function InvoiceDialog({
   const total = subtotal + Number(form.tax_amount || 0);
 
   const isDirty = JSON.stringify({ f: form, li: lines }) !== baseline;
-  const tryClose = () => { if (isDirty && !confirm("Discard changes?")) return; onOpenChange(false); };
+  const tryClose = () => onOpenChange(false);
 
   const set = (k: keyof InvoiceForm, v: any) => {
     setForm((p) => {
@@ -151,6 +155,7 @@ export function InvoiceDialog({
       qc.invalidateQueries({ queryKey: ["invoices"] });
       setForm((f) => ({ ...f, id, invoice_number }));
       setLines(linesToSave);
+      setBaseline(JSON.stringify({ f: { ...form, id, invoice_number, status: payload.status }, li: linesToSave }));
       return { id: id!, invoiceNumber: invoice_number };
     } catch (e: any) {
       toast.error(e.message); return null;
@@ -165,6 +170,7 @@ export function InvoiceDialog({
       type: "invoice", number: invoice_number, issue_date: form.issue_date, due_date: form.due_date,
       client_po_number: form.client_po_number, payment_terms: form.payment_terms, notes: form.notes,
       subtotal, tax_amount: Number(form.tax_amount || 0), total,
+      paidStamp: (form.status || "draft") === "paid",
       party: {
         name: c?.company_name || "", contact: c?.contact_name ?? undefined, email: c?.contact_email ?? undefined, phone: c?.contact_phone ?? undefined,
         street: c?.billing_street ?? undefined, city: c?.billing_city ?? undefined, state: c?.billing_state ?? undefined, zip: c?.billing_zip ?? undefined,
@@ -178,7 +184,8 @@ export function InvoiceDialog({
     if (!result) return;
     const num = result.invoiceNumber;
     const pdf = buildPdf(num);
-    pdf.output("dataurlnewwindow");
+    setPreviewBlob(pdf.output("blob"));
+    setPreviewOpen(true);
   };
 
   const handleSend = async () => {
@@ -208,13 +215,14 @@ export function InvoiceDialog({
   const clientOptions = clients.map((c: any) => ({ id: c.id, label: c.company_name, sub: c.contact_email || undefined }));
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
+    <>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
       <DialogContent
         className="max-w-4xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
       >
         <DialogHeader>
           <DialogTitle>{form.invoice_number ? `Invoice ${form.invoice_number}` : "New Invoice"}</DialogTitle>
@@ -266,7 +274,15 @@ export function InvoiceDialog({
           <Button disabled={saving} onClick={handleSend}>Send Invoice</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <PdfPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        title={form.invoice_number ? `Preview ${form.invoice_number}` : "Preview Invoice"}
+        blob={previewBlob}
+        filename={`${form.invoice_number || "invoice"}.pdf`}
+      />
+    </>
   );
 }
 

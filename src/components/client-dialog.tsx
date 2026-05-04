@@ -14,6 +14,7 @@ import {
 import { ChevronDown } from "lucide-react";
 import { PhoneInput } from "@/components/phone-input";
 import { StateSelect } from "@/components/state-select";
+import { shouldAllowDialogClose } from "@/lib/dialog";
 
 export type ClientForm = {
   id?: string;
@@ -48,10 +49,7 @@ export function ClientDialog({
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(baseline);
 
-  const tryClose = () => {
-    if (isDirty && !confirm("Discard changes?")) return;
-    onOpenChange(false);
-  };
+  const tryClose = () => onOpenChange(false);
 
   const set = (k: keyof ClientForm, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
 
@@ -97,9 +95,9 @@ export function ClientDialog({
       <DialogContent
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
         hideCloseButton
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
       >
         <DialogHeader><DialogTitle>{editing ? "Edit Client" : "New Client"}</DialogTitle></DialogHeader>
         <div className="space-y-4 py-2">

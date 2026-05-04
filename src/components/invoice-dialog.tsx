@@ -182,25 +182,25 @@ export function InvoiceDialog({
   };
 
   const handleSend = async () => {
-    const result = await persist("sent");
-    if (!result) return;
-    const id = result.id;
+    const persistResult = await persist("sent");
+    if (!persistResult) return;
+    const id = persistResult.id;
     const c = clients.find((c: any) => c.id === form.client_id);
     const num = (await supabase.from("invoices").select("invoice_number").eq("id", id).single()).data?.invoice_number || "INV";
     const pdf = buildPdf(num);
-    const result = await sendDocumentEmail({
+    const sendResult = await sendDocumentEmail({
       type: "invoice", number: num, recipientEmail: c?.contact_email, recipientName: c?.contact_name || c?.company_name,
       subject: `Invoice ${num} from ${settings?.company_name || ""}`.trim(),
       pdf, filename: `${num}.pdf`,
       extra: { due_date: form.due_date, total },
     });
-    if (result.ok) {
+    if (sendResult.ok) {
       await supabase.from("invoices").update({ date_sent: new Date().toISOString() }).eq("id", id);
-      toast.success(result.skipped ? "PDF generated (no webhook configured)" : "Invoice sent");
+      toast.success(sendResult.skipped ? "PDF generated (no webhook configured)" : "Invoice sent");
       qc.invalidateQueries({ queryKey: ["invoices"] });
       onOpenChange(false);
     } else {
-      toast.error(`Send failed: ${(result as any).error || "Webhook returned " + (result as any).status}`);
+      toast.error(`Send failed: ${(sendResult as any).error || "Webhook returned " + (sendResult as any).status}`);
     }
   };
 

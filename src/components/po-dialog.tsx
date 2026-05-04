@@ -16,6 +16,8 @@ import { sendDocumentEmail } from "@/lib/send";
 import { logActivity } from "@/lib/activity";
 import { getNextDocumentNumber } from "@/lib/document-number";
 import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
+import { shouldAllowDialogClose } from "@/lib/dialog";
+import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 
 export type POForm = {
   id?: string;
@@ -43,6 +45,8 @@ export function POdialog({
   const [lines, setLines] = useState<LineItem[]>([]);
   const [baseline, setBaseline] = useState("");
   const [saving, setSaving] = useState(false);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const { data: vendors = [] } = useQuery({
     queryKey: ["vendors-mini"],
@@ -94,7 +98,7 @@ export function POdialog({
   const total = subtotal;
 
   const isDirty = JSON.stringify({ f: form, li: lines }) !== baseline;
-  const tryClose = () => { if (isDirty && !confirm("Discard changes?")) return; onOpenChange(false); };
+  const tryClose = () => onOpenChange(false);
   const set = (k: keyof POForm, v: any) => setForm((p) => ({ ...p, [k]: v }));
 
   const persist = async (statusOverride?: string): Promise<{ id: string; poNumber: string } | null> => {
@@ -135,6 +139,7 @@ export function POdialog({
       qc.invalidateQueries({ queryKey: ["purchase_orders"] });
       setForm((f) => ({ ...f, id, po_number }));
       setLines(linesToSave);
+      setBaseline(JSON.stringify({ f: { ...form, id, po_number, status: payload.status }, li: linesToSave }));
       return { id: id!, poNumber: po_number };
     } catch (e: any) {
       toast.error(e.message); return null;
@@ -164,7 +169,8 @@ export function POdialog({
   const handlePreviewPdf = async () => {
     const result = await persist(); if (!result) return;
     const num = result.poNumber;
-    buildPdf(num).output("dataurlnewwindow");
+    setPreviewBlob(buildPdf(num).output("blob"));
+    setPreviewOpen(true);
   };
   const handleSend = async () => {
     const persistResult = await persist("sent"); if (!persistResult) return;
@@ -196,9 +202,9 @@ export function POdialog({
       <DialogContent
         className="max-w-4xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
       >
         <DialogHeader>
           <DialogTitle>{form.po_number ? `Purchase Order ${form.po_number}` : "New Purchase Order"}</DialogTitle>
@@ -266,5 +272,12 @@ export function POdialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <PdfPreviewDialog
+      open={previewOpen}
+      onOpenChange={setPreviewOpen}
+      title={form.po_number ? `Preview ${form.po_number}` : "Preview Purchase Order"}
+      blob={previewBlob}
+      filename={`${form.po_number || "purchase-order"}.pdf`}
+    />
   );
 }

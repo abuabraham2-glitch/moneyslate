@@ -215,7 +215,8 @@ export function InvoiceDialog({
   const clientOptions = clients.map((c: any) => ({ id: c.id, label: c.company_name, sub: c.contact_email || undefined }));
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
+    <>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
       <DialogContent
         className="max-w-4xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
@@ -273,14 +274,15 @@ export function InvoiceDialog({
           <Button disabled={saving} onClick={handleSend}>Send Invoice</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
-    <PdfPreviewDialog
-      open={previewOpen}
-      onOpenChange={setPreviewOpen}
-      title={form.invoice_number ? `Preview ${form.invoice_number}` : "Preview Invoice"}
-      blob={previewBlob}
-      filename={`${form.invoice_number || "invoice"}.pdf`}
-    />
+      </Dialog>
+      <PdfPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        title={form.invoice_number ? `Preview ${form.invoice_number}` : "Preview Invoice"}
+        blob={previewBlob}
+        filename={`${form.invoice_number || "invoice"}.pdf`}
+      />
+    </>
   );
 }
 

@@ -19,6 +19,25 @@ import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/lin
 import { shouldAllowDialogClose } from "@/lib/dialog";
 import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 
+// Parse "Street, City, ST ZIP" into parts
+function parseCompanyAddress(addr: string): { street: string; city: string; state: string; zip: string } {
+  const out = { street: "", city: "", state: "", zip: "" };
+  if (!addr) return out;
+  const flat = addr.replace(/\n/g, ", ");
+  const parts = flat.split(",").map((s) => s.trim()).filter(Boolean);
+  if (parts.length >= 3) {
+    out.street = parts.slice(0, parts.length - 2).join(", ");
+    out.city = parts[parts.length - 2];
+    const tail = parts[parts.length - 1];
+    const m = tail.match(/^([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+    if (m) { out.state = m[1].toUpperCase(); out.zip = m[2]; }
+    else { out.state = tail; }
+  } else {
+    out.street = addr;
+  }
+  return out;
+}
+
 export type POForm = {
   id?: string;
   po_number?: string;
@@ -78,13 +97,18 @@ export function POdialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
-        // Default ship-to from company address
-        const addr = (settings?.company_address || "").split("\n");
+        // Default Bill To from company settings; auto-fill internal PO #
+        const parsed = parseCompanyAddress(settings?.company_address || "");
+        let internal = "";
+        try { internal = await getNextDocumentNumber("internal_po"); } catch {}
         const f: POForm = {
           vendor_id: null, issue_date: today,
+          internal_po_number: internal,
           ship_to_name: settings?.company_name || "",
-          ship_to_street: addr[0] || "",
-          ship_to_city: "", ship_to_state: "", ship_to_zip: "",
+          ship_to_street: parsed.street,
+          ship_to_city: parsed.city,
+          ship_to_state: parsed.state,
+          ship_to_zip: parsed.zip,
         };
         setForm(f);
         const initialLines = normalizeLineItemsForEditor([], "unit_cost");
@@ -228,7 +252,7 @@ export function POdialog({
           </div>
 
           <div className="space-y-2 border border-border rounded-lg p-3">
-            <p className="text-sm font-medium">Ship To</p>
+            <p className="text-sm font-medium">Bill To</p>
             <div className="space-y-1.5"><Label className="text-xs">Name</Label>
               <Input value={form.ship_to_name || ""} onChange={(e) => set("ship_to_name", e.target.value)} />
             </div>

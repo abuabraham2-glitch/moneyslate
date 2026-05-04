@@ -56,7 +56,7 @@ export function LineItemEditor({
                   onPick={(ps) => {
                     if (!ps) return;
                     const patch: Partial<LineItem> = { product_service_id: ps.id };
-                    if (!it.description) patch.description = ps.default_description || ps.name;
+                    if (!it.description && ps.default_description) patch.description = ps.default_description;
                     const defaultPrice = priceField === "unit_price" ? ps.default_price : ps.default_cost;
                     if (defaultPrice != null && !(it as any)[priceField]) {
                       (patch as any)[priceField] = Number(defaultPrice);

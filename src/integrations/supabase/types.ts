@@ -623,6 +623,7 @@ export type Database = {
           email_webhook_url: string | null
           id: string
           next_bill_number: number | null
+          next_internal_po_number: number | null
           next_invoice_number: number | null
           next_po_number: number | null
           theme: string | null
@@ -641,6 +642,7 @@ export type Database = {
           email_webhook_url?: string | null
           id?: string
           next_bill_number?: number | null
+          next_internal_po_number?: number | null
           next_invoice_number?: number | null
           next_po_number?: number | null
           theme?: string | null
@@ -659,6 +661,7 @@ export type Database = {
           email_webhook_url?: string | null
           id?: string
           next_bill_number?: number | null
+          next_internal_po_number?: number | null
           next_invoice_number?: number | null
           next_po_number?: number | null
           theme?: string | null
@@ -723,6 +726,7 @@ export type Database = {
     }
     Functions: {
       get_next_bill_number: { Args: never; Returns: string }
+      get_next_internal_po_number: { Args: never; Returns: string }
       get_next_invoice_number: { Args: never; Returns: string }
       get_next_po_number: { Args: never; Returns: string }
     }

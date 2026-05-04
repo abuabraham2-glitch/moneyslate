@@ -41,7 +41,7 @@ export async function getNextDocumentNumber(kind: DocumentKind): Promise<string>
 
   const { error: updateError } = await supabase
     .from("settings")
-    .update({ [column]: nextNumber + 1 })
+    .update({ [column]: nextNumber + 1 } as any)
     .eq("id", settings.id);
 
   if (updateError) throw updateError;

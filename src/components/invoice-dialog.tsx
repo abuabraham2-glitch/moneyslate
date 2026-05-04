@@ -14,6 +14,8 @@ import { addDaysFromTerms, formatCurrency } from "@/lib/format";
 import { generatePDF } from "@/lib/pdf";
 import { sendDocumentEmail } from "@/lib/send";
 import { logActivity } from "@/lib/activity";
+import { getNextDocumentNumber } from "@/lib/document-number";
+import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
 
 export type InvoiceForm = {
   id?: string;
@@ -67,15 +69,17 @@ export function InvoiceDialog({
             client_po_number: data.client_po_number || "", payment_terms: data.payment_terms || "",
             notes: data.notes || "", tax_amount: Number(data.tax_amount || 0), status: data.status,
           };
+          const normalizedLines = normalizeLineItemsForEditor((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_price: Number(l.unit_price), line_total: Number(l.line_total), sort_order: l.sort_order })), "unit_price");
           setForm(f);
-          setLines((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_price: Number(l.unit_price), line_total: Number(l.line_total), sort_order: l.sort_order })));
-          setBaseline(JSON.stringify({ f, li }));
+          setLines(normalizedLines);
+          setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
         const f: InvoiceForm = { client_id: null, issue_date: today, due_date: today, tax_amount: 0, payment_terms: settings?.default_payment_terms || "Net 30" };
         setForm(f);
-        setLines([]);
-        setBaseline(JSON.stringify({ f, li: [] }));
+        const initialLines = normalizeLineItemsForEditor([], "unit_price");
+        setLines(initialLines);
+        setBaseline(JSON.stringify({ f, li: initialLines }));
       }
     })();
   }, [open, invoiceId]);
@@ -106,13 +110,16 @@ export function InvoiceDialog({
     });
   };
 
-  const persist = async (statusOverride?: string): Promise<string | null> => {
+  const persist = async (statusOverride?: string): Promise<{ id: string; invoiceNumber: string } | null> => {
     if (!form.client_id) { toast.error("Select a client"); return null; }
-    if (lines.length === 0) { toast.error("Add at least one line item"); return null; }
+    const linesToSave = sanitizeLineItemsForSave(lines, "unit_price");
+    if (linesToSave.length === 0) { toast.error("Add at least one line item"); return null; }
     setSaving(true);
     try {
       let id = form.id;
       let invoice_number = form.invoice_number;
+      if (!id && !invoice_number) invoice_number = await getNextDocumentNumber("invoice");
+      if (!invoice_number) throw new Error("Unable to assign an invoice number.");
       const payload: any = {
         client_id: form.client_id,
         issue_date: form.issue_date,
@@ -127,16 +134,14 @@ export function InvoiceDialog({
         const { error } = await supabase.from("invoices").update(payload).eq("id", id);
         if (error) throw error;
       } else {
-        const { data: numRow } = await supabase.rpc("get_next_invoice_number");
-        invoice_number = numRow as unknown as string;
         const { data, error } = await supabase.from("invoices").insert({ ...payload, invoice_number }).select().single();
         if (error) throw error;
         id = data.id;
       }
       // replace line items
       await supabase.from("invoice_line_items").delete().eq("invoice_id", id!);
-      if (lines.length) {
-        await supabase.from("invoice_line_items").insert(lines.map((l, i) => ({
+      if (linesToSave.length) {
+        await supabase.from("invoice_line_items").insert(linesToSave.map((l, i) => ({
           invoice_id: id, product_service_id: l.product_service_id || null,
           description: l.description, quantity: l.quantity, unit_price: l.unit_price ?? 0,
           line_total: l.line_total, sort_order: i,
@@ -145,13 +150,14 @@ export function InvoiceDialog({
       await logActivity(form.id ? "update" : "create", "invoice", id!, `${form.id ? "Updated" : "Created"} invoice ${invoice_number}`);
       qc.invalidateQueries({ queryKey: ["invoices"] });
       setForm((f) => ({ ...f, id, invoice_number }));
-      return id!;
+      setLines(linesToSave);
+      return { id: id!, invoiceNumber: invoice_number };
     } catch (e: any) {
       toast.error(e.message); return null;
     } finally { setSaving(false); }
   };
 
-  const handleSaveDraft = async () => { const id = await persist(); if (id) { toast.success("Draft saved"); onOpenChange(false); } };
+  const handleSaveDraft = async () => { const result = await persist(); if (result) { toast.success("Draft saved"); onOpenChange(false); } };
 
   const buildPdf = (invoice_number: string) => {
     const c = clients.find((c: any) => c.id === form.client_id);
@@ -168,16 +174,17 @@ export function InvoiceDialog({
   };
 
   const handlePreviewPdf = async () => {
-    const id = await persist();
-    if (!id) return;
-    const num = (form.invoice_number || "INV") as string;
+    const result = await persist();
+    if (!result) return;
+    const num = result.invoiceNumber;
     const pdf = buildPdf(num);
     pdf.output("dataurlnewwindow");
   };
 
   const handleSend = async () => {
-    const id = await persist("sent");
-    if (!id) return;
+    const result = await persist("sent");
+    if (!result) return;
+    const id = result.id;
     const c = clients.find((c: any) => c.id === form.client_id);
     const num = (await supabase.from("invoices").select("invoice_number").eq("id", id).single()).data?.invoice_number || "INV";
     const pdf = buildPdf(num);

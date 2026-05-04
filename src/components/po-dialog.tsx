@@ -19,6 +19,25 @@ import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/lin
 import { shouldAllowDialogClose } from "@/lib/dialog";
 import { PdfPreviewDialog } from "@/components/pdf-preview-dialog";
 
+// Parse "Street, City, ST ZIP" into parts
+function parseCompanyAddress(addr: string): { street: string; city: string; state: string; zip: string } {
+  const out = { street: "", city: "", state: "", zip: "" };
+  if (!addr) return out;
+  const flat = addr.replace(/\n/g, ", ");
+  const parts = flat.split(",").map((s) => s.trim()).filter(Boolean);
+  if (parts.length >= 3) {
+    out.street = parts.slice(0, parts.length - 2).join(", ");
+    out.city = parts[parts.length - 2];
+    const tail = parts[parts.length - 1];
+    const m = tail.match(/^([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+    if (m) { out.state = m[1].toUpperCase(); out.zip = m[2]; }
+    else { out.state = tail; }
+  } else {
+    out.street = addr;
+  }
+  return out;
+}
+
 export type POForm = {
   id?: string;
   po_number?: string;

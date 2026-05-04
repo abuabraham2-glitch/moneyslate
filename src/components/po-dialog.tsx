@@ -252,7 +252,7 @@ export function POdialog({
           </div>
 
           <div className="space-y-2 border border-border rounded-lg p-3">
-            <p className="text-sm font-medium">Ship To</p>
+            <p className="text-sm font-medium">Bill To</p>
             <div className="space-y-1.5"><Label className="text-xs">Name</Label>
               <Input value={form.ship_to_name || ""} onChange={(e) => set("ship_to_name", e.target.value)} />
             </div>

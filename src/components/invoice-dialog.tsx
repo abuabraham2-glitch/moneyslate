@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LineItemEditor, type LineItem } from "@/components/line-item-editor";
 import { EntityCombobox } from "@/components/entity-combobox";
+import { NumberInput } from "@/components/number-input";
 import { addDaysFromTerms, formatCurrency } from "@/lib/format";
 import { generatePDF } from "@/lib/pdf";
 import { sendDocumentEmail } from "@/lib/send";
@@ -67,7 +68,7 @@ export function InvoiceDialog({
             notes: data.notes || "", tax_amount: Number(data.tax_amount || 0), status: data.status,
           };
           setForm(f);
-          setLines((li || []).map((l: any) => ({ id: l.id, description: l.description, quantity: Number(l.quantity), unit_price: Number(l.unit_price), line_total: Number(l.line_total), sort_order: l.sort_order })));
+          setLines((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_price: Number(l.unit_price), line_total: Number(l.line_total), sort_order: l.sort_order })));
           setBaseline(JSON.stringify({ f, li }));
         }
       } else {
@@ -136,7 +137,8 @@ export function InvoiceDialog({
       await supabase.from("invoice_line_items").delete().eq("invoice_id", id!);
       if (lines.length) {
         await supabase.from("invoice_line_items").insert(lines.map((l, i) => ({
-          invoice_id: id, description: l.description, quantity: l.quantity, unit_price: l.unit_price ?? 0,
+          invoice_id: id, product_service_id: l.product_service_id || null,
+          description: l.description, quantity: l.quantity, unit_price: l.unit_price ?? 0,
           line_total: l.line_total, sort_order: i,
         })));
       }
@@ -208,7 +210,7 @@ export function InvoiceDialog({
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{editing ? `Invoice ${form.invoice_number}` : "New Invoice"}</DialogTitle>
+          <DialogTitle>{form.invoice_number ? `Invoice ${form.invoice_number}` : "New Invoice"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -229,7 +231,7 @@ export function InvoiceDialog({
               <Input value={form.payment_terms || ""} onChange={(e) => set("payment_terms", e.target.value)} placeholder="Net 30" />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Tax amount</Label>
-              <Input type="number" step="0.01" value={form.tax_amount} onChange={(e) => set("tax_amount", Number(e.target.value))} />
+              <NumberInput value={form.tax_amount} onChange={(n) => set("tax_amount", n)} />
             </div>
           </div>
 

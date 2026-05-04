@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { logActivity } from "@/lib/activity";
 import { PhoneInput } from "@/components/phone-input";
 import { StateSelect } from "@/components/state-select";
+import { shouldAllowDialogClose } from "@/lib/dialog";
 
 export type VendorForm = {
   id?: string;
@@ -41,10 +42,7 @@ export function VendorDialog({
   }, [initial, open]);
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(baseline);
-  const tryClose = () => {
-    if (isDirty && !confirm("Discard changes?")) return;
-    onOpenChange(false);
-  };
+  const tryClose = () => onOpenChange(false);
 
   const set = <K extends keyof VendorForm>(k: K, v: VendorForm[K]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -78,9 +76,9 @@ export function VendorDialog({
       <DialogContent
         className="max-w-xl max-h-[90vh] overflow-y-auto"
         hideCloseButton
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
       >
         <DialogHeader><DialogTitle>{editing ? "Edit Vendor" : "New Vendor"}</DialogTitle></DialogHeader>
         <div className="space-y-3 py-2">

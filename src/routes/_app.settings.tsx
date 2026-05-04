@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { ProductsServicesSettings } from "@/components/products-services-settings";
 
 export const Route = createFileRoute("/_app/settings")({ component: SettingsPage });
 
@@ -80,6 +81,8 @@ function SettingsPage() {
             <Field label="Next PO #"><Input type="number" value={form.next_po_number} onChange={(e) => set("next_po_number", Number(e.target.value))} /></Field>
             <Field label="Next bill #"><Input type="number" value={form.next_bill_number} onChange={(e) => set("next_bill_number", Number(e.target.value))} /></Field>
           </CardContent></Card>
+
+        <ProductsServicesSettings />
 
         <Card className="shadow-card"><CardHeader><CardTitle className="text-base">Integrations</CardTitle></CardHeader>
           <CardContent className="space-y-4">

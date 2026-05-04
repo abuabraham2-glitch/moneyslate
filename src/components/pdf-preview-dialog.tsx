@@ -88,17 +88,16 @@ export function PdfPreviewDialog({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="px-6 pb-4 flex-1 min-h-0 overflow-auto bg-muted/30">
-          <div ref={containerRef} className="py-2">
-            {!blob && (
-              <div className="text-sm text-muted-foreground text-center py-12">PDF preview unavailable.</div>
-            )}
-            {rendering && blob && (
-              <div className="text-sm text-muted-foreground text-center py-12">Rendering PDF…</div>
-            )}
-            {error && (
-              <div className="text-sm text-destructive text-center py-12">{error}</div>
-            )}
-          </div>
+          {!blob && (
+            <div className="text-sm text-muted-foreground text-center py-12">PDF preview unavailable.</div>
+          )}
+          {rendering && blob && (
+            <div className="text-sm text-muted-foreground text-center py-12">Rendering PDF…</div>
+          )}
+          {error && (
+            <div className="text-sm text-destructive text-center py-12">{error}</div>
+          )}
+          <div ref={containerRef} className="py-2" />
         </div>
         <DialogFooter className="px-6 pb-6">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>

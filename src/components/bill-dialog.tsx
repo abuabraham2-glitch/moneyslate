@@ -13,6 +13,7 @@ import { formatCurrency } from "@/lib/format";
 import { logActivity } from "@/lib/activity";
 import { getNextDocumentNumber } from "@/lib/document-number";
 import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
+import { shouldAllowDialogClose } from "@/lib/dialog";
 
 export type BillForm = {
   id?: string;
@@ -91,7 +92,7 @@ export function BillDialog({
   const total = useMemo(() => lines.reduce((s, l) => s + Number(l.line_total || 0), 0), [lines]);
 
   const isDirty = JSON.stringify({ f: form, li: lines }) !== baseline;
-  const tryClose = () => { if (isDirty && !confirm("Discard changes?")) return; onOpenChange(false); };
+  const tryClose = () => onOpenChange(false);
   const set = (k: keyof BillForm, v: any) => setForm((p) => ({ ...p, [k]: v }));
 
   const save = async () => {
@@ -133,6 +134,7 @@ export function BillDialog({
       qc.invalidateQueries({ queryKey: ["purchase_orders"] });
       setForm((f) => ({ ...f, id, bill_number }));
       setLines(linesToSave);
+      setBaseline(JSON.stringify({ f: { ...form, id, bill_number, status: payload.status }, li: linesToSave }));
       toast.success("Bill saved");
       onOpenChange(false);
     } catch (e: any) {
@@ -149,9 +151,9 @@ export function BillDialog({
       <DialogContent
         className="max-w-3xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
       >
         <DialogHeader>
           <DialogTitle>{form.bill_number ? `Bill ${form.bill_number}` : "New Bill"}</DialogTitle>

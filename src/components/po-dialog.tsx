@@ -14,6 +14,8 @@ import { formatCurrency } from "@/lib/format";
 import { generatePDF } from "@/lib/pdf";
 import { sendDocumentEmail } from "@/lib/send";
 import { logActivity } from "@/lib/activity";
+import { getNextDocumentNumber } from "@/lib/document-number";
+import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
 
 export type POForm = {
   id?: string;
@@ -66,9 +68,10 @@ export function POdialog({
             ship_to_city: data.ship_to_city || "", ship_to_state: data.ship_to_state || "", ship_to_zip: data.ship_to_zip || "",
             notes: data.notes || "", status: data.status,
           };
+          const normalizedLines = normalizeLineItemsForEditor((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })), "unit_cost");
           setForm(f);
-          setLines((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })));
-          setBaseline(JSON.stringify({ f, li }));
+          setLines(normalizedLines);
+          setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
         // Default ship-to from company address
@@ -80,8 +83,9 @@ export function POdialog({
           ship_to_city: "", ship_to_state: "", ship_to_zip: "",
         };
         setForm(f);
-        setLines([]);
-        setBaseline(JSON.stringify({ f, li: [] }));
+        const initialLines = normalizeLineItemsForEditor([], "unit_cost");
+        setLines(initialLines);
+        setBaseline(JSON.stringify({ f, li: initialLines }));
       }
     })();
   }, [open, poId, settings]);
@@ -93,13 +97,16 @@ export function POdialog({
   const tryClose = () => { if (isDirty && !confirm("Discard changes?")) return; onOpenChange(false); };
   const set = (k: keyof POForm, v: any) => setForm((p) => ({ ...p, [k]: v }));
 
-  const persist = async (statusOverride?: string): Promise<string | null> => {
+  const persist = async (statusOverride?: string): Promise<{ id: string; poNumber: string } | null> => {
     if (!form.vendor_id) { toast.error("Select a vendor"); return null; }
-    if (lines.length === 0) { toast.error("Add at least one line item"); return null; }
+    const linesToSave = sanitizeLineItemsForSave(lines, "unit_cost");
+    if (linesToSave.length === 0) { toast.error("Add at least one line item"); return null; }
     setSaving(true);
     try {
       let id = form.id;
       let po_number = form.po_number;
+      if (!id && !po_number) po_number = await getNextDocumentNumber("po");
+      if (!po_number) throw new Error("Unable to assign a PO number.");
       const payload: any = {
         vendor_id: form.vendor_id, issue_date: form.issue_date,
         expected_delivery_date: form.expected_delivery_date || null,
@@ -113,15 +120,13 @@ export function POdialog({
         const { error } = await supabase.from("purchase_orders").update(payload).eq("id", id);
         if (error) throw error;
       } else {
-        const { data: numRow } = await supabase.rpc("get_next_po_number");
-        po_number = numRow as unknown as string;
         const { data, error } = await supabase.from("purchase_orders").insert({ ...payload, po_number }).select().single();
         if (error) throw error;
         id = data.id;
       }
       await supabase.from("po_line_items").delete().eq("po_id", id!);
-      if (lines.length) {
-        await supabase.from("po_line_items").insert(lines.map((l, i) => ({
+      if (linesToSave.length) {
+        await supabase.from("po_line_items").insert(linesToSave.map((l, i) => ({
           po_id: id, product_service_id: l.product_service_id || null,
           description: l.description, quantity: l.quantity, unit_cost: l.unit_cost ?? 0, line_total: l.line_total, sort_order: i,
         })));
@@ -129,7 +134,8 @@ export function POdialog({
       await logActivity(form.id ? "update" : "create", "po", id!, `${form.id ? "Updated" : "Created"} PO ${po_number}`);
       qc.invalidateQueries({ queryKey: ["purchase_orders"] });
       setForm((f) => ({ ...f, id, po_number }));
-      return id!;
+      setLines(linesToSave);
+      return { id: id!, poNumber: po_number };
     } catch (e: any) {
       toast.error(e.message); return null;
     } finally { setSaving(false); }
@@ -154,30 +160,31 @@ export function POdialog({
     }, (settings || {}) as any);
   };
 
-  const handleSaveDraft = async () => { const id = await persist(); if (id) { toast.success("Draft saved"); onOpenChange(false); } };
+  const handleSaveDraft = async () => { const result = await persist(); if (result) { toast.success("Draft saved"); onOpenChange(false); } };
   const handlePreviewPdf = async () => {
-    const id = await persist(); if (!id) return;
-    const num = (form.po_number || "PO") as string;
+    const result = await persist(); if (!result) return;
+    const num = result.poNumber;
     buildPdf(num).output("dataurlnewwindow");
   };
   const handleSend = async () => {
-    const id = await persist("sent"); if (!id) return;
+    const persistResult = await persist("sent"); if (!persistResult) return;
+    const id = persistResult.id;
     const v = vendors.find((x: any) => x.id === form.vendor_id);
     const num = (await supabase.from("purchase_orders").select("po_number").eq("id", id).single()).data?.po_number || "PO";
     const pdf = buildPdf(num);
-    const result = await sendDocumentEmail({
+    const sendResult = await sendDocumentEmail({
       type: "po", number: num, recipientEmail: v?.email, recipientName: v?.contact_name || v?.company_name,
       subject: `Purchase Order ${num} from ${settings?.company_name || ""}`.trim(),
       pdf, filename: `${num}.pdf`,
       extra: { expected_delivery_date: form.expected_delivery_date, total },
     });
-    if (result.ok) {
+    if (sendResult.ok) {
       await supabase.from("purchase_orders").update({ date_sent: new Date().toISOString() }).eq("id", id);
-      toast.success(result.skipped ? "PDF generated (no webhook configured)" : "PO sent");
+      toast.success(sendResult.skipped ? "PDF generated (no webhook configured)" : "PO sent");
       qc.invalidateQueries({ queryKey: ["purchase_orders"] });
       onOpenChange(false);
     } else {
-      toast.error(`Send failed: ${(result as any).error || "Webhook returned " + (result as any).status}`);
+      toast.error(`Send failed: ${(sendResult as any).error || "Webhook returned " + (sendResult as any).status}`);
     }
   };
 

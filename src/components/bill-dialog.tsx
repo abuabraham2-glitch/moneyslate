@@ -11,6 +11,8 @@ import { LineItemEditor, type LineItem } from "@/components/line-item-editor";
 import { EntityCombobox } from "@/components/entity-combobox";
 import { formatCurrency } from "@/lib/format";
 import { logActivity } from "@/lib/activity";
+import { getNextDocumentNumber } from "@/lib/document-number";
+import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
 
 export type BillForm = {
   id?: string;
@@ -66,19 +68,22 @@ export function BillDialog({
             bill_date: data.bill_date, due_date: data.due_date || "", linked_po_id: data.linked_po_id,
             notes: data.notes || "", status: data.status,
           };
+          const normalizedLines = normalizeLineItemsForEditor((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })), "unit_cost");
           setForm(f);
-          setLines((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })));
-          setBaseline(JSON.stringify({ f, li }));
+          setLines(normalizedLines);
+          setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else if (prefill) {
         const f: BillForm = { vendor_id: prefill.vendor_id, bill_date: today, linked_po_id: prefill.linked_po_id, notes: prefill.po_number ? `From ${prefill.po_number}` : "" };
+        const normalizedLines = normalizeLineItemsForEditor(prefill.lines, "unit_cost");
         setForm(f);
-        setLines(prefill.lines);
-        setBaseline(JSON.stringify({ f, li: prefill.lines }));
+        setLines(normalizedLines);
+        setBaseline(JSON.stringify({ f, li: normalizedLines }));
       } else {
         const f: BillForm = { vendor_id: null, bill_date: today };
-        setForm(f); setLines([]);
-        setBaseline(JSON.stringify({ f, li: [] }));
+        const initialLines = normalizeLineItemsForEditor([], "unit_cost");
+        setForm(f); setLines(initialLines);
+        setBaseline(JSON.stringify({ f, li: initialLines }));
       }
     })();
   }, [open, billId, prefill]);
@@ -91,11 +96,14 @@ export function BillDialog({
 
   const save = async () => {
     if (!form.vendor_id) { toast.error("Select a vendor"); return; }
-    if (lines.length === 0) { toast.error("Add at least one line item"); return; }
+    const linesToSave = sanitizeLineItemsForSave(lines, "unit_cost");
+    if (linesToSave.length === 0) { toast.error("Add at least one line item"); return; }
     setSaving(true);
     try {
       let id = form.id;
       let bill_number = form.bill_number;
+      if (!id && !bill_number) bill_number = await getNextDocumentNumber("bill");
+      if (!bill_number) throw new Error("Unable to assign a bill number.");
       const payload: any = {
         vendor_id: form.vendor_id, bill_date: form.bill_date, due_date: form.due_date || null,
         linked_po_id: form.linked_po_id || null,
@@ -105,8 +113,6 @@ export function BillDialog({
         const { error } = await supabase.from("bills").update(payload).eq("id", id);
         if (error) throw error;
       } else {
-        const { data: numRow } = await supabase.rpc("get_next_bill_number");
-        bill_number = numRow as unknown as string;
         const { data, error } = await supabase.from("bills").insert({ ...payload, bill_number }).select().single();
         if (error) throw error;
         id = data.id;
@@ -116,8 +122,8 @@ export function BillDialog({
         }
       }
       await supabase.from("bill_line_items").delete().eq("bill_id", id!);
-      if (lines.length) {
-        await supabase.from("bill_line_items").insert(lines.map((l, i) => ({
+      if (linesToSave.length) {
+        await supabase.from("bill_line_items").insert(linesToSave.map((l, i) => ({
           bill_id: id, product_service_id: l.product_service_id || null,
           description: l.description, quantity: l.quantity, unit_cost: l.unit_cost ?? 0, line_total: l.line_total, sort_order: i,
         })));
@@ -125,6 +131,8 @@ export function BillDialog({
       await logActivity(form.id ? "update" : "create", "bill", id!, `${form.id ? "Updated" : "Created"} bill ${bill_number}`);
       qc.invalidateQueries({ queryKey: ["bills"] });
       qc.invalidateQueries({ queryKey: ["purchase_orders"] });
+      setForm((f) => ({ ...f, id, bill_number }));
+      setLines(linesToSave);
       toast.success("Bill saved");
       onOpenChange(false);
     } catch (e: any) {

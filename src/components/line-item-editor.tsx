@@ -3,17 +3,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, X } from "lucide-react";
 import { NumberInput } from "@/components/number-input";
 import { ProductServiceCombobox } from "@/components/product-service-combobox";
+import {
+  calculateLineItem,
+  createEmptyLineItem,
+  type EditableLineItem,
+  type LineItemEditedField,
+} from "@/lib/line-items";
 
-export type LineItem = {
-  id?: string;
-  product_service_id?: string | null;
-  description: string;
-  quantity: number;
-  unit_price?: number;
-  unit_cost?: number;
-  line_total: number;
-  sort_order?: number;
-};
+export type LineItem = EditableLineItem;
 
 export function LineItemEditor({
   items,
@@ -26,17 +23,12 @@ export function LineItemEditor({
   priceLabel?: string;
   priceField?: "unit_price" | "unit_cost";
 }) {
-  const recalc = (row: LineItem): LineItem => {
-    const qty = Number(row.quantity || 0);
-    const price = Number((row as any)[priceField] || 0);
-    return { ...row, line_total: +(qty * price).toFixed(2) };
-  };
-  const update = (idx: number, patch: Partial<LineItem>) => {
+  const update = (idx: number, patch: Partial<LineItem>, source: LineItemEditedField = "init") => {
     const next = [...items];
-    next[idx] = recalc({ ...next[idx], ...patch });
+    next[idx] = calculateLineItem({ ...next[idx], ...patch }, priceField, source);
     onChange(next);
   };
-  const add = () => onChange([...items, recalc({ description: "", quantity: 1, [priceField]: 0, line_total: 0 } as LineItem)]);
+  const add = () => onChange([...items, createEmptyLineItem(priceField)]);
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx));
 
   // Block Enter from doing anything in single-line numeric/combobox cells
@@ -69,7 +61,7 @@ export function LineItemEditor({
                     if (defaultPrice != null && !(it as any)[priceField]) {
                       (patch as any)[priceField] = Number(defaultPrice);
                     }
-                    update(idx, patch);
+                    update(idx, patch, (patch as any)[priceField] != null ? priceField : "init");
                   }}
                 />
               </td>
@@ -84,18 +76,26 @@ export function LineItemEditor({
               <td className="px-2 py-1.5" onKeyDown={blockEnter}>
                 <NumberInput
                   value={it.quantity}
-                  onChange={(n) => update(idx, { quantity: n })}
+                  onChange={(n) => update(idx, { quantity: n }, "quantity")}
                   className="border-0 shadow-none text-right focus-visible:ring-1"
                 />
               </td>
               <td className="px-2 py-1.5" onKeyDown={blockEnter}>
                 <NumberInput
                   value={(it as any)[priceField] ?? 0}
-                  onChange={(n) => update(idx, { [priceField]: n } as any)}
+                  onChange={(n) => update(idx, { [priceField]: n } as any, priceField)}
+                  decimals={4}
                   className="border-0 shadow-none text-right focus-visible:ring-1"
                 />
               </td>
-              <td className="px-3 py-2.5 text-right tabular-nums">${(Number(it.line_total) || 0).toFixed(2)}</td>
+              <td className="px-2 py-1.5" onKeyDown={blockEnter}>
+                <NumberInput
+                  value={it.line_total ?? 0}
+                  onChange={(n) => update(idx, { line_total: n }, "line_total")}
+                  decimals={2}
+                  className="border-0 shadow-none text-right focus-visible:ring-1"
+                />
+              </td>
               <td className="px-1 py-1"><Button variant="ghost" size="icon" onClick={() => remove(idx)}><X className="h-4 w-4 text-muted-foreground" /></Button></td>
             </tr>
           ))}

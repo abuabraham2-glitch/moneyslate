@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 
 /** Numeric input that accepts intermediate states like "0." while typing. */
 export function NumberInput({
-  value, onChange, className, placeholder, onKeyDown,
+  value, onChange, className, placeholder, onKeyDown, decimals,
 }: {
   value: number | undefined | null;
   onChange: (n: number) => void;
   className?: string;
   placeholder?: string;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  decimals?: number;
 }) {
   const [text, setText] = useState<string>(value == null ? "" : String(value));
 
@@ -40,7 +41,14 @@ export function NumberInput({
         }
       }}
       onBlur={() => {
-        if (text === "" || text === "-" || text === "." || text === "-.") setText("0");
+        if (text === "" || text === "-" || text === "." || text === "-.") {
+          setText("0");
+          return;
+        }
+        const n = parseFloat(text);
+        if (!Number.isNaN(n) && typeof decimals === "number") {
+          setText(n.toFixed(decimals));
+        }
       }}
     />
   );

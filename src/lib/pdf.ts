@@ -103,7 +103,7 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
 
   // Ship to (PO)
   if (!isInvoice && doc.ship_to?.street) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Ship To:", 110, ty + 3); ty += 8;
+    pdf.setFont("helvetica", "bold"); pdf.text("Bill To:", 110, ty + 3); ty += 8;
     pdf.setFont("helvetica", "normal");
     if (doc.ship_to.name) { pdf.text(doc.ship_to.name, 110, ty); ty += 5; }
     pdf.text(doc.ship_to.street, 110, ty); ty += 5;

@@ -67,7 +67,7 @@ export function POdialog({
             notes: data.notes || "", status: data.status,
           };
           setForm(f);
-          setLines((li || []).map((l: any) => ({ id: l.id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })));
+          setLines((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })));
           setBaseline(JSON.stringify({ f, li }));
         }
       } else {
@@ -122,7 +122,8 @@ export function POdialog({
       await supabase.from("po_line_items").delete().eq("po_id", id!);
       if (lines.length) {
         await supabase.from("po_line_items").insert(lines.map((l, i) => ({
-          po_id: id, description: l.description, quantity: l.quantity, unit_cost: l.unit_cost ?? 0, line_total: l.line_total, sort_order: i,
+          po_id: id, product_service_id: l.product_service_id || null,
+          description: l.description, quantity: l.quantity, unit_cost: l.unit_cost ?? 0, line_total: l.line_total, sort_order: i,
         })));
       }
       await logActivity(form.id ? "update" : "create", "po", id!, `${form.id ? "Updated" : "Created"} PO ${po_number}`);
@@ -193,7 +194,7 @@ export function POdialog({
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{editing ? `PO ${form.po_number}` : "New Purchase Order"}</DialogTitle>
+          <DialogTitle>{form.po_number ? `Purchase Order ${form.po_number}` : "New Purchase Order"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">

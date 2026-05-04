@@ -95,6 +95,7 @@ export type Database = {
           description: string | null
           id: string
           line_total: number
+          product_service_id: string | null
           quantity: number
           sort_order: number
           unit_cost: number
@@ -104,6 +105,7 @@ export type Database = {
           description?: string | null
           id?: string
           line_total?: number
+          product_service_id?: string | null
           quantity?: number
           sort_order?: number
           unit_cost?: number
@@ -113,6 +115,7 @@ export type Database = {
           description?: string | null
           id?: string
           line_total?: number
+          product_service_id?: string | null
           quantity?: number
           sort_order?: number
           unit_cost?: number
@@ -349,6 +352,7 @@ export type Database = {
           id: string
           invoice_id: string
           line_total: number
+          product_service_id: string | null
           quantity: number
           sort_order: number
           unit_price: number
@@ -358,6 +362,7 @@ export type Database = {
           id?: string
           invoice_id: string
           line_total?: number
+          product_service_id?: string | null
           quantity?: number
           sort_order?: number
           unit_price?: number
@@ -367,6 +372,7 @@ export type Database = {
           id?: string
           invoice_id?: string
           line_total?: number
+          product_service_id?: string | null
           quantity?: number
           sort_order?: number
           unit_price?: number
@@ -458,6 +464,7 @@ export type Database = {
           id: string
           line_total: number
           po_id: string
+          product_service_id: string | null
           quantity: number
           sort_order: number
           unit_cost: number
@@ -467,6 +474,7 @@ export type Database = {
           id?: string
           line_total?: number
           po_id: string
+          product_service_id?: string | null
           quantity?: number
           sort_order?: number
           unit_cost?: number
@@ -476,6 +484,7 @@ export type Database = {
           id?: string
           line_total?: number
           po_id?: string
+          product_service_id?: string | null
           quantity?: number
           sort_order?: number
           unit_cost?: number
@@ -489,6 +498,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      products_services: {
+        Row: {
+          active: boolean
+          created_at: string
+          default_cost: number | null
+          default_description: string | null
+          default_price: number | null
+          id: string
+          name: string
+          sort_order: number
+          type: Database["public"]["Enums"]["product_service_type"]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          default_cost?: number | null
+          default_description?: string | null
+          default_price?: number | null
+          id?: string
+          name: string
+          sort_order?: number
+          type?: Database["public"]["Enums"]["product_service_type"]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          default_cost?: number | null
+          default_description?: string | null
+          default_price?: number | null
+          id?: string
+          name?: string
+          sort_order?: number
+          type?: Database["public"]["Enums"]["product_service_type"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       purchase_orders: {
         Row: {
@@ -684,6 +732,7 @@ export type Database = {
       bill_status: "unpaid" | "paid"
       invoice_status: "draft" | "sent" | "paid"
       po_status: "draft" | "sent" | "received" | "billed"
+      product_service_type: "product" | "service"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -816,6 +865,7 @@ export const Constants = {
       bill_status: ["unpaid", "paid"],
       invoice_status: ["draft", "sent", "paid"],
       po_status: ["draft", "sent", "received", "billed"],
+      product_service_type: ["product", "service"],
     },
   },
 } as const

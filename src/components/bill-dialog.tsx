@@ -67,7 +67,7 @@ export function BillDialog({
             notes: data.notes || "", status: data.status,
           };
           setForm(f);
-          setLines((li || []).map((l: any) => ({ id: l.id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })));
+          setLines((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })));
           setBaseline(JSON.stringify({ f, li }));
         }
       } else if (prefill) {
@@ -118,7 +118,8 @@ export function BillDialog({
       await supabase.from("bill_line_items").delete().eq("bill_id", id!);
       if (lines.length) {
         await supabase.from("bill_line_items").insert(lines.map((l, i) => ({
-          bill_id: id, description: l.description, quantity: l.quantity, unit_cost: l.unit_cost ?? 0, line_total: l.line_total, sort_order: i,
+          bill_id: id, product_service_id: l.product_service_id || null,
+          description: l.description, quantity: l.quantity, unit_cost: l.unit_cost ?? 0, line_total: l.line_total, sort_order: i,
         })));
       }
       await logActivity(form.id ? "update" : "create", "bill", id!, `${form.id ? "Updated" : "Created"} bill ${bill_number}`);
@@ -145,7 +146,7 @@ export function BillDialog({
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{editing ? `Bill ${form.bill_number}` : "New Bill"}</DialogTitle>
+          <DialogTitle>{form.bill_number ? `Bill ${form.bill_number}` : "New Bill"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">

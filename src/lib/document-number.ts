@@ -1,27 +1,30 @@
 import { supabase } from "@/integrations/supabase/client";
 
-type DocumentKind = "invoice" | "po" | "bill";
+type DocumentKind = "invoice" | "po" | "bill" | "internal_po";
 
 const rpcByKind = {
   invoice: "get_next_invoice_number",
   po: "get_next_po_number",
   bill: "get_next_bill_number",
+  internal_po: "get_next_internal_po_number",
 } as const;
 
 const settingsColumnByKind = {
   invoice: "next_invoice_number",
   po: "next_po_number",
   bill: "next_bill_number",
+  internal_po: "next_internal_po_number",
 } as const;
 
 const prefixByKind = {
   invoice: "INV",
   po: "PO",
   bill: "BILL",
+  internal_po: "",
 } as const;
 
 export async function getNextDocumentNumber(kind: DocumentKind): Promise<string> {
-  const { data, error } = await supabase.rpc(rpcByKind[kind]);
+  const { data, error } = await supabase.rpc(rpcByKind[kind] as any);
   if (!error && typeof data === "string" && data.trim()) return data;
 
   const column = settingsColumnByKind[kind];
@@ -46,5 +49,6 @@ export async function getNextDocumentNumber(kind: DocumentKind): Promise<string>
 
   if (updateError) throw updateError;
 
-  return `${prefixByKind[kind]}-${nextNumber}`;
+  const prefix = prefixByKind[kind];
+  return prefix ? `${prefix}-${nextNumber}` : String(nextNumber);
 }

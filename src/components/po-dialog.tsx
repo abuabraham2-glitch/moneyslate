@@ -198,7 +198,8 @@ export function POdialog({
   const vendorOptions = vendors.map((v: any) => ({ id: v.id, label: v.company_name, sub: v.email || undefined }));
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
+    <>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
       <DialogContent
         className="max-w-4xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
@@ -271,13 +272,14 @@ export function POdialog({
           <Button disabled={saving} onClick={handleSend}>Send PO</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
-    <PdfPreviewDialog
-      open={previewOpen}
-      onOpenChange={setPreviewOpen}
-      title={form.po_number ? `Preview ${form.po_number}` : "Preview Purchase Order"}
-      blob={previewBlob}
-      filename={`${form.po_number || "purchase-order"}.pdf`}
-    />
+      </Dialog>
+      <PdfPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        title={form.po_number ? `Preview ${form.po_number}` : "Preview Purchase Order"}
+        blob={previewBlob}
+        filename={`${form.po_number || "purchase-order"}.pdf`}
+      />
+    </>
   );
 }

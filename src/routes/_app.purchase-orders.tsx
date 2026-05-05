@@ -110,12 +110,12 @@ function POPage() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this draft PO?")) return;
+    if (!confirm("Delete this PO? This cannot be undone.")) return;
     await supabase.from("po_line_items").delete().eq("po_id", id);
     const { error } = await supabase.from("purchase_orders").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["purchase_orders"] });
-    toast.success("Deleted");
+    toast.success("PO deleted");
   };
 
   const edit = (id: string) => { setEditingId(id); setOpen(true); };
@@ -161,7 +161,7 @@ function POPage() {
                         {r.status === "sent" && <DropdownMenuItem onClick={() => convertToBill(r.id)}>Convert to Bill</DropdownMenuItem>}
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => duplicate(r.id)}>Duplicate</DropdownMenuItem>
-                        {r.status === "draft" && <>
+                        {(r.status === "draft" || r.status === "sent") && <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive" onClick={() => remove(r.id)}>Delete</DropdownMenuItem>
                         </>}

@@ -70,7 +70,7 @@ export function LineItemEditor({
                   value={it.description}
                   onChange={(e) => update(idx, { description: e.target.value })}
                   rows={1}
-                  className="border-0 shadow-none focus-visible:ring-1 min-h-9 py-1.5 resize-y"
+                  className="border-0 shadow-none focus-visible:ring-1 min-h-9 py-1.5"
                 />
               </td>
               <td className="px-2 py-1.5" onKeyDown={blockEnter}>

@@ -160,12 +160,12 @@ export function BillDialog({
         onOpenAutoFocus={(e) => {
           if (fromPrefillRef.current) {
             e.preventDefault();
-            // Focus the first line item's product/service input instead of the vendor field
+            // Focus the first line item's Product/Service combobox button
             requestAnimationFrame(() => {
               const root = linesContainerRef.current;
               if (!root) return;
-              const firstInput = root.querySelector<HTMLElement>("tbody tr:first-child input, tbody tr:first-child textarea");
-              firstInput?.focus();
+              const trigger = root.querySelector<HTMLElement>('tbody tr:first-child button[role="combobox"]');
+              trigger?.focus();
             });
           }
         }}

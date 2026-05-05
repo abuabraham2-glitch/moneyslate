@@ -152,18 +152,28 @@ function Dashboard() {
           </h1>
         </div>
 
-        {/* Hero */}
+        {/* Two-column: action card + revenue trend */}
         {items.length === 0 ? (
           <div style={{ textAlign: "center", color: "#A39E96", fontSize: 14, padding: "40px 0" }}>All clear!</div>
         ) : (
-          <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 20, marginBottom: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: "#232929" }}>
-                {items.length} thing{items.length === 1 ? "" : "s"} need{items.length === 1 ? "s" : ""} your attention today
-              </span>
-              <span style={{ fontSize: 12, color: "#4A5A5A" }}>~{items.length * 3 + 1} min</span>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 20,
+              marginBottom: 18,
+            }}
+          >
+            <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: "#232929" }}>
+                  {items.length} thing{items.length === 1 ? "" : "s"} need{items.length === 1 ? "s" : ""} your attention today
+                </span>
+                <span style={{ fontSize: 12, color: "#4A5A5A" }}>~{items.length * 3 + 1} min</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{items}</div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{items}</div>
+            <RevenueTrendCard amount={kpis?.revenue ?? 0} />
           </div>
         )}
 

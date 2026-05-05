@@ -11,7 +11,7 @@ type Settings = {
 };
 
 type Doc = {
-  type: "invoice" | "po";
+  type: "invoice" | "po" | "bill";
   number: string;
   issue_date: string;
   due_date?: string;
@@ -42,6 +42,7 @@ type Doc = {
   };
   lines: Array<{ description: string; quantity: number; price: number; total: number }>;
   paidStamp?: boolean;
+  paidStampColor?: [number, number, number];
 };
 
 export function generatePDF(doc: Doc, settings: Settings): jsPDF {
@@ -51,7 +52,7 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   // Header
   pdf.setFontSize(22);
   pdf.setFont("helvetica", "bold");
-  pdf.text(isInvoice ? "INVOICE" : "PURCHASE ORDER", 15, 20);
+  pdf.text(doc.type === "invoice" ? "INVOICE" : doc.type === "bill" ? "BILL" : "PURCHASE ORDER", 15, 20);
 
   // Doc number + dates
   pdf.setFontSize(10);
@@ -155,14 +156,16 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
     pdf.text(wrapped, 15, by);
   }
 
-  if (isInvoice && doc.paidStamp) {
+  if (doc.paidStamp) {
     if (typeof (pdf as any).GState === "function") {
       pdf.setGState(new (pdf as any).GState({ opacity: 0.35 }));
     }
-    pdf.setTextColor(22, 163, 74);
+    const [r, g, b] = doc.paidStampColor || [22, 163, 74];
+    pdf.setTextColor(r, g, b);
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(120);
-    pdf.text("PAID", 105, 155, { align: "center", angle: -35 });
+    // Diagonal ascending left-to-right (positive angle)
+    pdf.text("PAID", 105, 155, { align: "center", angle: 30 });
     if (typeof (pdf as any).GState === "function") {
       pdf.setGState(new (pdf as any).GState({ opacity: 1 }));
     }

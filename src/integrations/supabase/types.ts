@@ -735,7 +735,7 @@ export type Database = {
       bank_txn_type: "credit" | "debit"
       bill_status: "unpaid" | "paid"
       invoice_status: "draft" | "sent" | "paid"
-      po_status: "draft" | "sent" | "received" | "billed"
+      po_status: "draft" | "sent" | "received" | "completed"
       product_service_type: "product" | "service"
     }
     CompositeTypes: {
@@ -868,7 +868,7 @@ export const Constants = {
       bank_txn_type: ["credit", "debit"],
       bill_status: ["unpaid", "paid"],
       invoice_status: ["draft", "sent", "paid"],
-      po_status: ["draft", "sent", "received", "billed"],
+      po_status: ["draft", "sent", "received", "completed"],
       product_service_type: ["product", "service"],
     },
   },

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ import type { LineItem } from "@/components/line-item-editor";
 export const Route = createFileRoute("/_app/purchase-orders")({ component: POPage });
 
 function POPage() {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -45,12 +46,12 @@ function POPage() {
     );
   }, [data, search]);
 
-  const markReceived = async (id: string) => {
-    const { error } = await supabase.from("purchase_orders").update({ status: "received" }).eq("id", id);
+  const markSent = async (id: string) => {
+    const { error } = await supabase.from("purchase_orders").update({ status: "sent", date_sent: new Date().toISOString() }).eq("id", id);
     if (error) { toast.error(error.message); return; }
-    await logActivity("receive", "po", id, "Marked PO received");
+    await logActivity("send", "po", id, "Marked PO sent");
     qc.invalidateQueries({ queryKey: ["purchase_orders"] });
-    toast.success("Marked received");
+    toast.success("Marked sent");
   };
 
   const convertToBill = async (id: string) => {
@@ -165,8 +166,8 @@ function POPage() {
                       <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => edit(r.id)}>Edit</DropdownMenuItem>
-                        {(r.status === "draft" || r.status === "sent") && <DropdownMenuItem onClick={() => markReceived(r.id)}>Mark Received</DropdownMenuItem>}
-                        {r.status === "received" && <DropdownMenuItem onClick={() => convertToBill(r.id)}>Convert to Bill</DropdownMenuItem>}
+                        {r.status === "draft" && <DropdownMenuItem onClick={() => markSent(r.id)}>Mark Sent</DropdownMenuItem>}
+                        {r.status === "sent" && <DropdownMenuItem onClick={() => convertToBill(r.id)}>Convert to Bill</DropdownMenuItem>}
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => duplicate(r.id)}>Duplicate</DropdownMenuItem>
                         {r.status === "draft" && <>
@@ -189,6 +190,7 @@ function POPage() {
         open={billOpen}
         onOpenChange={(v) => { setBillOpen(v); if (!v) setBillPrefill(null); }}
         prefill={billPrefill}
+        onSaved={() => { navigate({ to: "/bills" }); }}
       />
     </PageContainer>
   );

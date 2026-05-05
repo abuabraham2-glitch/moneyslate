@@ -27,13 +27,14 @@ export type BillForm = {
 };
 
 export function BillDialog({
-  open, onOpenChange, billId, prefill,
+  open, onOpenChange, billId, prefill, onSaved,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   billId?: string | null;
   /** Pre-fill bill from a PO (Convert to Bill) */
   prefill?: { vendor_id: string; linked_po_id: string; lines: LineItem[]; po_number?: string } | null;
+  onSaved?: (info: { id: string; bill_number: string }) => void;
 }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
@@ -49,10 +50,10 @@ export function BillDialog({
   });
 
   const { data: receivedPOs = [] } = useQuery({
-    queryKey: ["received-pos", form.vendor_id],
+    queryKey: ["sent-pos", form.vendor_id],
     enabled: !!form.vendor_id,
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("id,po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "received").order("created_at", { ascending: false });
+      const { data } = await supabase.from("purchase_orders").select("id,po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "sent").order("created_at", { ascending: false });
       return data || [];
     },
   });
@@ -117,9 +118,9 @@ export function BillDialog({
         const { data, error } = await supabase.from("bills").insert({ ...payload, bill_number }).select().single();
         if (error) throw error;
         id = data.id;
-        // If linked PO, flip its status to billed
+        // If linked PO, flip its status to completed
         if (form.linked_po_id) {
-          await supabase.from("purchase_orders").update({ status: "billed" }).eq("id", form.linked_po_id);
+          await supabase.from("purchase_orders").update({ status: "completed" }).eq("id", form.linked_po_id);
         }
       }
       await supabase.from("bill_line_items").delete().eq("bill_id", id!);
@@ -136,6 +137,7 @@ export function BillDialog({
       setLines(linesToSave);
       setBaseline(JSON.stringify({ f: { ...form, id, bill_number, status: payload.status }, li: linesToSave }));
       toast.success("Bill saved");
+      onSaved?.({ id: id!, bill_number: bill_number! });
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);

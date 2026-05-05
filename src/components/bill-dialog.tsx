@@ -157,6 +157,18 @@ export function BillDialog({
       <DialogContent
         className="max-w-3xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
+        onOpenAutoFocus={(e) => {
+          if (fromPrefillRef.current) {
+            e.preventDefault();
+            // Focus the first line item's product/service input instead of the vendor field
+            requestAnimationFrame(() => {
+              const root = linesContainerRef.current;
+              if (!root) return;
+              const firstInput = root.querySelector<HTMLElement>("tbody tr:first-child input, tbody tr:first-child textarea");
+              firstInput?.focus();
+            });
+          }
+        }}
         onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
         onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
         onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}

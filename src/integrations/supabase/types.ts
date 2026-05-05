@@ -398,6 +398,7 @@ export type Database = {
           id: string
           invoice_number: string
           issue_date: string
+          memo: string | null
           notes: string | null
           payment_method: string | null
           payment_notes: string | null
@@ -418,6 +419,7 @@ export type Database = {
           id?: string
           invoice_number: string
           issue_date?: string
+          memo?: string | null
           notes?: string | null
           payment_method?: string | null
           payment_notes?: string | null
@@ -438,6 +440,7 @@ export type Database = {
           id?: string
           invoice_number?: string
           issue_date?: string
+          memo?: string | null
           notes?: string | null
           payment_method?: string | null
           payment_notes?: string | null
@@ -546,6 +549,7 @@ export type Database = {
           id: string
           internal_po_number: string | null
           issue_date: string
+          memo: string | null
           notes: string | null
           po_number: string
           ship_to_city: string | null
@@ -566,6 +570,7 @@ export type Database = {
           id?: string
           internal_po_number?: string | null
           issue_date?: string
+          memo?: string | null
           notes?: string | null
           po_number: string
           ship_to_city?: string | null
@@ -586,6 +591,7 @@ export type Database = {
           id?: string
           internal_po_number?: string | null
           issue_date?: string
+          memo?: string | null
           notes?: string | null
           po_number?: string
           ship_to_city?: string | null

@@ -6,7 +6,7 @@ import { PageContainer, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Search, MoreHorizontal, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -21,12 +21,21 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/invoices")({ component: InvoicesPage });
 
+type SortKey = "name" | "due_date" | "total" | "status";
+
 function InvoicesPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("due_date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (k: SortKey) => {
+    if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(k); setSortDir("asc"); }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["invoices"],
@@ -38,11 +47,26 @@ function InvoicesPage() {
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
-    return (data || []).filter((r: any) =>
+    const list = (data || []).filter((r: any) =>
       r.invoice_number.toLowerCase().includes(s) ||
       (r.client?.company_name || "").toLowerCase().includes(s)
     );
-  }, [data, search]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    const get = (r: any) => {
+      switch (sortKey) {
+        case "name": return (r.client?.company_name || "").toLowerCase();
+        case "due_date": return r.due_date || "";
+        case "total": return Number(r.total || 0);
+        case "status": return r.status || "";
+      }
+    };
+    return [...list].sort((a, b) => {
+      const av = get(a), bv = get(b);
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }, [data, search, sortKey, sortDir]);
 
   const markPaid = async (id: string, info: { date_paid: string; payment_method: string; payment_notes?: string }) => {
     const { error } = await supabase.from("invoices").update({ status: "paid", ...info }).eq("id", id);
@@ -62,6 +86,7 @@ function InvoicesPage() {
       type: "invoice", number: inv.invoice_number, issue_date: inv.issue_date, due_date: inv.due_date || undefined,
       client_po_number: inv.client_po_number || undefined, payment_terms: inv.payment_terms || undefined, notes: inv.notes || undefined,
       subtotal: Number(inv.subtotal), tax_amount: Number(inv.tax_amount), total: Number(inv.total),
+      paidStamp: inv.status === "paid",
       party: {
         name: c?.company_name || "", contact: c?.contact_name ?? undefined, email: c?.contact_email ?? undefined, phone: c?.contact_phone ?? undefined,
         street: c?.billing_street ?? undefined, city: c?.billing_city ?? undefined, state: c?.billing_state ?? undefined, zip: c?.billing_zip ?? undefined,
@@ -122,8 +147,13 @@ function InvoicesPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
-                <Th>Client</Th><Th>Memo</Th><Th>Issued</Th><Th>Due</Th>
-                <Th className="text-right">Amount</Th><Th>Status</Th><Th></Th>
+                <SortTh label="Name" k="name" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th>Memo</Th>
+                <Th>Issued</Th>
+                <SortTh label="Due Date" k="due_date" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <SortTh label="Amount" k="total" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} className="text-right" />
+                <SortTh label="Status" k="status" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th></Th>
               </tr>
             </thead>
             <tbody>
@@ -177,3 +207,14 @@ function InvoicesPage() {
 
 function Th({ children, className = "" }: any) { return <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wide ${className}`}>{children}</th>; }
 function Td({ children, className = "" }: any) { return <td className={`px-4 py-3 ${className}`}>{children}</td>; }
+function SortTh({ label, k, sortKey, sortDir, onSort, className = "" }: { label: string; k: SortKey; sortKey: SortKey; sortDir: "asc" | "desc"; onSort: (k: SortKey) => void; className?: string }) {
+  const active = sortKey === k;
+  const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wide ${className}`}>
+      <button type="button" onClick={() => onSort(k)} className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${active ? "text-foreground" : ""} ${className.includes("text-right") ? "ml-auto" : ""}`}>
+        <span>{label}</span><Icon className="h-3 w-3" />
+      </button>
+    </th>
+  );
+}

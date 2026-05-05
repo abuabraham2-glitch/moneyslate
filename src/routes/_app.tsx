@@ -134,7 +134,7 @@ function UserMenu() {
       <div className="flex items-center gap-2 px-2">
         <div
           className="h-8 w-8 rounded-full grid place-items-center text-xs font-semibold"
-          style={{ background: "#2D3838", color: "#D8E5D2" }}
+          style={{ background: "#232929", color: "#D8E5D2" }}
         >
           {session?.user?.email?.[0]?.toUpperCase() || "U"}
         </div>

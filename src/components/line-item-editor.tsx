@@ -84,7 +84,8 @@ export function LineItemEditor({
                 <NumberInput
                   value={(it as any)[priceField] ?? 0}
                   onChange={(n) => update(idx, { [priceField]: n } as any, priceField)}
-                  decimals={4}
+                  minDecimals={2}
+                  maxDecimals={4}
                   className="border-0 shadow-none text-right focus-visible:ring-1"
                 />
               </td>

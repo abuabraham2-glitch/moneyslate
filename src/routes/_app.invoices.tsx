@@ -6,7 +6,7 @@ import { PageContainer, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Search, MoreHorizontal, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -21,12 +21,21 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/invoices")({ component: InvoicesPage });
 
+type SortKey = "name" | "due_date" | "total" | "status";
+
 function InvoicesPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("due_date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (k: SortKey) => {
+    if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(k); setSortDir("asc"); }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["invoices"],
@@ -38,11 +47,26 @@ function InvoicesPage() {
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
-    return (data || []).filter((r: any) =>
+    const list = (data || []).filter((r: any) =>
       r.invoice_number.toLowerCase().includes(s) ||
       (r.client?.company_name || "").toLowerCase().includes(s)
     );
-  }, [data, search]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    const get = (r: any) => {
+      switch (sortKey) {
+        case "name": return (r.client?.company_name || "").toLowerCase();
+        case "due_date": return r.due_date || "";
+        case "total": return Number(r.total || 0);
+        case "status": return r.status || "";
+      }
+    };
+    return [...list].sort((a, b) => {
+      const av = get(a), bv = get(b);
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }, [data, search, sortKey, sortDir]);
 
   const markPaid = async (id: string, info: { date_paid: string; payment_method: string; payment_notes?: string }) => {
     const { error } = await supabase.from("invoices").update({ status: "paid", ...info }).eq("id", id);

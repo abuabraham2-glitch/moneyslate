@@ -46,14 +46,6 @@ function POPage() {
     );
   }, [data, search]);
 
-  const markSent = async (id: string) => {
-    const { error } = await supabase.from("purchase_orders").update({ status: "sent", date_sent: new Date().toISOString() }).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    await logActivity("send", "po", id, "Marked PO sent");
-    qc.invalidateQueries({ queryKey: ["purchase_orders"] });
-    toast.success("Marked sent");
-  };
-
   const convertToBill = async (id: string) => {
     const { data: po } = await supabase.from("purchase_orders").select("*").eq("id", id).single();
     const { data: lines } = await supabase.from("po_line_items").select("*").eq("po_id", id).order("sort_order");

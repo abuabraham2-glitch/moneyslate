@@ -108,7 +108,7 @@ function InvoicesPage() {
       <PageHeader
         title="Invoices"
         description="Send invoices, track payments"
-        action={<Button onClick={() => { setEditingId(null); setOpen(true); }}><Plus className="h-4 w-4 mr-2" /> New Invoice</Button>}
+        action={<Button onClick={() => { setEditingId(null); setOpen(true); }} style={{ background: "#997839", color: "white" }}><Plus className="h-4 w-4 mr-2" /> New Invoice</Button>}
       />
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-sm">

@@ -126,19 +126,22 @@ function UserMenu() {
   const { theme, setTheme } = useTheme();
   const nav = useNavigate();
   return (
-    <div className="border-t border-sidebar-border p-3 space-y-2">
+    <div className="p-3 space-y-2" style={{ borderTop: "1px solid rgba(212, 229, 210, 0.1)" }}>
       <div className="flex items-center gap-2 px-2">
-        <div className="h-8 w-8 rounded-full bg-sidebar-accent text-sidebar-accent-foreground grid place-items-center text-xs font-semibold">
+        <div
+          className="h-8 w-8 rounded-full grid place-items-center text-xs font-semibold"
+          style={{ background: "#2D3838", color: "#D8E5D2" }}
+        >
           {session?.user?.email?.[0]?.toUpperCase() || "U"}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-sidebar-foreground/60 truncate">{session?.user?.email}</p>
+          <p className="text-xs truncate" style={{ color: "#A39E96" }}>{session?.user?.email}</p>
         </div>
       </div>
       <div className="flex gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="flex-1 justify-start text-sidebar-foreground/80">
+            <Button variant="ghost" size="sm" className="flex-1 justify-start hover:bg-transparent" style={{ color: "#A39E96" }}>
               {theme === "light" ? <Sun className="h-4 w-4 mr-2" /> : theme === "dark" ? <Moon className="h-4 w-4 mr-2" /> : <Monitor className="h-4 w-4 mr-2" />}
               Theme
             </Button>
@@ -153,7 +156,7 @@ function UserMenu() {
           variant="ghost"
           size="sm"
           onClick={async () => { await supabase.auth.signOut(); nav({ to: "/login" }); }}
-          className="text-sidebar-foreground/80"
+          style={{ color: "#A39E96" }}
         >
           <LogOut className="h-4 w-4" />
         </Button>

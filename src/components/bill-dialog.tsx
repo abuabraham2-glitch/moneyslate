@@ -27,13 +27,14 @@ export type BillForm = {
 };
 
 export function BillDialog({
-  open, onOpenChange, billId, prefill,
+  open, onOpenChange, billId, prefill, onSaved,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   billId?: string | null;
   /** Pre-fill bill from a PO (Convert to Bill) */
   prefill?: { vendor_id: string; linked_po_id: string; lines: LineItem[]; po_number?: string } | null;
+  onSaved?: (info: { id: string; bill_number: string }) => void;
 }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);

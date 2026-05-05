@@ -107,15 +107,19 @@ function NavLink({ to, label, icon: Icon, onClick }: { to: string; label: string
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+      className="flex items-center rounded-md text-sm font-medium transition-colors"
       style={{
+        gap: 10,
         color: active || hover ? "#D8E5D2" : "#A39E96",
-        background: active ? "rgba(216, 229, 210, 0.08)" : "transparent",
-        borderLeft: active ? "2px solid #D8E5D2" : "2px solid transparent",
-        paddingLeft: active ? 10 : 12,
+        background: active ? "rgba(216, 229, 210, 0.15)" : "transparent",
+        borderLeft: active ? "3px solid #D8E5D2" : "3px solid transparent",
+        paddingLeft: active ? 9 : 12,
+        paddingRight: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
       }}
     >
-      <Icon className="h-4 w-4" />
+      <Icon size={18} />
       {label}
     </Link>
   );

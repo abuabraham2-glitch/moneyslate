@@ -50,10 +50,10 @@ export function BillDialog({
   });
 
   const { data: receivedPOs = [] } = useQuery({
-    queryKey: ["received-pos", form.vendor_id],
+    queryKey: ["sent-pos", form.vendor_id],
     enabled: !!form.vendor_id,
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("id,po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "received").order("created_at", { ascending: false });
+      const { data } = await supabase.from("purchase_orders").select("id,po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "sent").order("created_at", { ascending: false });
       return data || [];
     },
   });

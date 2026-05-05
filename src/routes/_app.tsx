@@ -51,7 +51,7 @@ function AppLayout() {
           "fixed lg:sticky top-0 left-0 z-40 h-screen w-64 flex-col transition-transform",
           open ? "flex translate-x-0" : "-translate-x-full lg:translate-x-0 lg:flex"
         )}
-        style={{ background: "#232929", borderRight: "1px solid rgba(212, 229, 210, 0.1)" }}
+        style={{ background: "#2D3838", borderRight: "1px solid rgba(212, 229, 210, 0.1)" }}
       >
         <div
           className="h-16 px-5 flex items-center justify-between"

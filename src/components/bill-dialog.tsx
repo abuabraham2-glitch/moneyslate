@@ -192,7 +192,7 @@ export function BillDialog({
             </div>
           </div>
 
-          <div className="space-y-1.5"><Label className="text-xs">Line items</Label>
+          <div className="space-y-1.5" ref={linesContainerRef}><Label className="text-xs">Line items</Label>
             <LineItemEditor items={lines} onChange={setLines} priceLabel="Unit Cost" priceField="unit_cost" />
           </div>
 

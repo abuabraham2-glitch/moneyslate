@@ -19,14 +19,14 @@ export const Route = createFileRoute("/_app")({
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/clients", label: "Clients", icon: Users },
-  { to: "/vendors", label: "Vendors", icon: Truck },
+  { to: "/clients", label: "Clients", icon: User },
+  { to: "/vendors", label: "Vendors", icon: Building2 },
   { to: "/invoices", label: "Invoices", icon: FileText },
-  { to: "/purchase-orders", label: "Purchase Orders", icon: ClipboardList },
-  { to: "/bills", label: "Bills", icon: Receipt },
-  { to: "/expenses", label: "Expenses", icon: CreditCard },
-  { to: "/reconciliation", label: "Reconciliation", icon: Banknote },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/purchase-orders", label: "Purchase Orders", icon: FileCheck },
+  { to: "/bills", label: "Bills", icon: FileSpreadsheet },
+  { to: "/expenses", label: "Expenses", icon: Scale },
+  { to: "/reconciliation", label: "Reconciliation", icon: CheckCircle2 },
+  { to: "/reports", label: "Reports", icon: TrendingUp },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 

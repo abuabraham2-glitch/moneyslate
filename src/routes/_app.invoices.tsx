@@ -62,6 +62,7 @@ function InvoicesPage() {
       type: "invoice", number: inv.invoice_number, issue_date: inv.issue_date, due_date: inv.due_date || undefined,
       client_po_number: inv.client_po_number || undefined, payment_terms: inv.payment_terms || undefined, notes: inv.notes || undefined,
       subtotal: Number(inv.subtotal), tax_amount: Number(inv.tax_amount), total: Number(inv.total),
+      paidStamp: inv.status === "paid",
       party: {
         name: c?.company_name || "", contact: c?.contact_name ?? undefined, email: c?.contact_email ?? undefined, phone: c?.contact_phone ?? undefined,
         street: c?.billing_street ?? undefined, city: c?.billing_city ?? undefined, state: c?.billing_state ?? undefined, zip: c?.billing_zip ?? undefined,

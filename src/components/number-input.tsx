@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 /** Numeric input that accepts intermediate states like "0." while typing. */
 export function NumberInput({
-  value, onChange, className, placeholder, onKeyDown, decimals,
+  value, onChange, className, placeholder, onKeyDown, decimals, minDecimals, maxDecimals,
 }: {
   value: number | undefined | null;
   onChange: (n: number) => void;
@@ -11,6 +11,8 @@ export function NumberInput({
   placeholder?: string;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   decimals?: number;
+  minDecimals?: number;
+  maxDecimals?: number;
 }) {
   const [text, setText] = useState<string>(value == null ? "" : String(value));
 
@@ -46,8 +48,18 @@ export function NumberInput({
           return;
         }
         const n = parseFloat(text);
-        if (!Number.isNaN(n) && typeof decimals === "number") {
-          setText(n.toFixed(decimals));
+        if (!Number.isNaN(n)) {
+          if (typeof minDecimals === "number" || typeof maxDecimals === "number") {
+            // Determine current decimal count from typed text
+            const dotIdx = text.indexOf(".");
+            const typedDecimals = dotIdx === -1 ? 0 : text.length - dotIdx - 1;
+            const lo = minDecimals ?? 0;
+            const hi = maxDecimals ?? Math.max(typedDecimals, lo);
+            const places = Math.min(Math.max(typedDecimals, lo), hi);
+            setText(n.toFixed(places));
+          } else if (typeof decimals === "number") {
+            setText(n.toFixed(decimals));
+          }
         }
       }}
     />

@@ -33,7 +33,8 @@ function Dashboard() {
   const { session } = useAuth();
   const user = session?.user;
   const meta = (user?.user_metadata as any) || {};
-  const firstName = meta.first_name || meta.full_name?.split(" ")[0] || (user?.email ? user.email.split("@")[0] : "there");
+  const rawFirst = meta.first_name || meta.full_name?.split(" ")[0] || (user?.email ? user.email.split("@")[0] : "there");
+  const firstName = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1) : rawFirst;
 
   const now = new Date();
   const dateLine = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).replace(",", " ·");

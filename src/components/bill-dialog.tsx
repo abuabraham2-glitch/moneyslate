@@ -78,12 +78,14 @@ export function BillDialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else if (prefill) {
+        fromPrefillRef.current = true;
         const f: BillForm = { vendor_id: prefill.vendor_id, bill_date: today, linked_po_id: prefill.linked_po_id, notes: prefill.po_number ? `From ${prefill.po_number}` : "" };
         const normalizedLines = normalizeLineItemsForEditor(prefill.lines, "unit_cost");
         setForm(f);
         setLines(normalizedLines);
         setBaseline(JSON.stringify({ f, li: normalizedLines }));
       } else {
+        fromPrefillRef.current = false;
         const f: BillForm = { vendor_id: null, bill_date: today };
         const initialLines = normalizeLineItemsForEditor([], "unit_cost");
         setForm(f); setLines(initialLines);

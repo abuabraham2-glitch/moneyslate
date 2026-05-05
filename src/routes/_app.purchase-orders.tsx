@@ -163,8 +163,13 @@ function POPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
-                <Th>Vendor</Th><Th>Memo</Th><Th>Issued</Th><Th>Expected</Th>
-                <Th className="text-right">Amount</Th><Th>Status</Th><Th></Th>
+                <SortTh label="Vendor" k="vendor" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th>Memo</Th>
+                <SortTh label="Issued" k="issue_date" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th>Expected</Th>
+                <SortTh label="Amount" k="total" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} className="text-right" />
+                <SortTh label="Status" k="status" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th></Th>
               </tr>
             </thead>
             <tbody>

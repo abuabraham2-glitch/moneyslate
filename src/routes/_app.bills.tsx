@@ -35,11 +35,7 @@ function BillsPage() {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortKey(k); setSortDir(k === "bill_date" ? "desc" : "asc"); }
   };
-  const qc = useQueryClient();
-  const [search, setSearch] = useState("");
-  const [open, setOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [payingId, setPayingId] = useState<string | null>(null);
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["bills"],

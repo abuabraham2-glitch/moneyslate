@@ -43,6 +43,8 @@ export function BillDialog({
   const [lines, setLines] = useState<LineItem[]>([]);
   const [baseline, setBaseline] = useState("");
   const [saving, setSaving] = useState(false);
+  const linesContainerRef = useRef<HTMLDivElement>(null);
+  const fromPrefillRef = useRef(false);
 
   const { data: vendors = [] } = useQuery({
     queryKey: ["vendors-mini"],

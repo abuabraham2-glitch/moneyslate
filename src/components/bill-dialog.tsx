@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,8 @@ export function BillDialog({
   const [lines, setLines] = useState<LineItem[]>([]);
   const [baseline, setBaseline] = useState("");
   const [saving, setSaving] = useState(false);
+  const linesContainerRef = useRef<HTMLDivElement>(null);
+  const fromPrefillRef = useRef(false);
 
   const { data: vendors = [] } = useQuery({
     queryKey: ["vendors-mini"],
@@ -76,12 +78,14 @@ export function BillDialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else if (prefill) {
+        fromPrefillRef.current = true;
         const f: BillForm = { vendor_id: prefill.vendor_id, bill_date: today, linked_po_id: prefill.linked_po_id, notes: prefill.po_number ? `From ${prefill.po_number}` : "" };
         const normalizedLines = normalizeLineItemsForEditor(prefill.lines, "unit_cost");
         setForm(f);
         setLines(normalizedLines);
         setBaseline(JSON.stringify({ f, li: normalizedLines }));
       } else {
+        fromPrefillRef.current = false;
         const f: BillForm = { vendor_id: null, bill_date: today };
         const initialLines = normalizeLineItemsForEditor([], "unit_cost");
         setForm(f); setLines(initialLines);
@@ -153,6 +157,18 @@ export function BillDialog({
       <DialogContent
         className="max-w-3xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
+        onOpenAutoFocus={(e) => {
+          if (fromPrefillRef.current) {
+            e.preventDefault();
+            // Focus the first line item's product/service input instead of the vendor field
+            requestAnimationFrame(() => {
+              const root = linesContainerRef.current;
+              if (!root) return;
+              const firstInput = root.querySelector<HTMLElement>("tbody tr:first-child input, tbody tr:first-child textarea");
+              firstInput?.focus();
+            });
+          }
+        }}
         onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
         onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
         onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
@@ -176,7 +192,7 @@ export function BillDialog({
             </div>
           </div>
 
-          <div className="space-y-1.5"><Label className="text-xs">Line items</Label>
+          <div className="space-y-1.5" ref={linesContainerRef}><Label className="text-xs">Line items</Label>
             <LineItemEditor items={lines} onChange={setLines} priceLabel="Unit Cost" priceField="unit_cost" />
           </div>
 

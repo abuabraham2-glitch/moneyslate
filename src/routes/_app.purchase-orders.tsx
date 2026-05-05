@@ -181,7 +181,7 @@ function POPage() {
         open={billOpen}
         onOpenChange={(v) => { setBillOpen(v); if (!v) setBillPrefill(null); }}
         prefill={billPrefill}
-        onSaved={() => { navigate({ to: "/bills" }); }}
+        onSaved={() => { toast.success("Bill created and PO marked as completed"); navigate({ to: "/bills" }); }}
       />
     </PageContainer>
   );

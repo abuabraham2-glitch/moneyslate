@@ -110,12 +110,12 @@ function POPage() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this draft PO?")) return;
+    if (!confirm("Delete this PO? This cannot be undone.")) return;
     await supabase.from("po_line_items").delete().eq("po_id", id);
     const { error } = await supabase.from("purchase_orders").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["purchase_orders"] });
-    toast.success("Deleted");
+    toast.success("PO deleted");
   };
 
   const edit = (id: string) => { setEditingId(id); setOpen(true); };

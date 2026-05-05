@@ -30,10 +30,10 @@ function fmtMoney(n: number): string {
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const firstName = ((user?.user_metadata as any)?.first_name)
-    || (user?.user_metadata as any)?.full_name?.split(" ")[0]
-    || (user?.email ? user.email.split("@")[0] : "there");
+  const { session } = useAuth();
+  const user = session?.user;
+  const meta = (user?.user_metadata as any) || {};
+  const firstName = meta.first_name || meta.full_name?.split(" ")[0] || (user?.email ? user.email.split("@")[0] : "there");
 
   const now = new Date();
   const dateLine = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).replace(",", " ·");

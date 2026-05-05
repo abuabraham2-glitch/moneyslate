@@ -46,14 +46,6 @@ function POPage() {
     );
   }, [data, search]);
 
-  const markSent = async (id: string) => {
-    const { error } = await supabase.from("purchase_orders").update({ status: "sent", date_sent: new Date().toISOString() }).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    await logActivity("send", "po", id, "Marked PO sent");
-    qc.invalidateQueries({ queryKey: ["purchase_orders"] });
-    toast.success("Marked sent");
-  };
-
   const convertToBill = async (id: string) => {
     const { data: po } = await supabase.from("purchase_orders").select("*").eq("id", id).single();
     const { data: lines } = await supabase.from("po_line_items").select("*").eq("po_id", id).order("sort_order");
@@ -166,7 +158,6 @@ function POPage() {
                       <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => edit(r.id)}>Edit</DropdownMenuItem>
-                        {r.status === "draft" && <DropdownMenuItem onClick={() => markSent(r.id)}>Mark Sent</DropdownMenuItem>}
                         {r.status === "sent" && <DropdownMenuItem onClick={() => convertToBill(r.id)}>Convert to Bill</DropdownMenuItem>}
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => duplicate(r.id)}>Duplicate</DropdownMenuItem>
@@ -190,7 +181,7 @@ function POPage() {
         open={billOpen}
         onOpenChange={(v) => { setBillOpen(v); if (!v) setBillPrefill(null); }}
         prefill={billPrefill}
-        onSaved={() => { navigate({ to: "/bills" }); }}
+        onSaved={() => { toast.success("Bill created and PO marked as completed"); navigate({ to: "/bills" }); }}
       />
     </PageContainer>
   );

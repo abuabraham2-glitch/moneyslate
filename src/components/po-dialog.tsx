@@ -197,10 +197,10 @@ export function POdialog({
     setPreviewOpen(true);
   };
   const handleSend = async () => {
-    const persistResult = await persist("sent"); if (!persistResult) return;
+    const persistResult = await persist(); if (!persistResult) return;
     const id = persistResult.id;
     const v = vendors.find((x: any) => x.id === form.vendor_id);
-    const num = (await supabase.from("purchase_orders").select("po_number").eq("id", id).single()).data?.po_number || "PO";
+    const num = persistResult.poNumber;
     const pdf = buildPdf(num);
     const sendResult = await sendDocumentEmail({
       type: "po", number: num, recipientEmail: v?.email, recipientName: v?.contact_name || v?.company_name,
@@ -209,8 +209,10 @@ export function POdialog({
       extra: { expected_delivery_date: form.expected_delivery_date, total },
     });
     if (sendResult.ok) {
-      await supabase.from("purchase_orders").update({ date_sent: new Date().toISOString() }).eq("id", id);
-      toast.success(sendResult.skipped ? "PDF generated (no webhook configured)" : "PO sent");
+      await supabase.from("purchase_orders")
+        .update({ status: "sent", date_sent: new Date().toISOString() })
+        .eq("id", id);
+      toast.success(sendResult.skipped ? "PDF generated (no webhook configured)" : "PO sent successfully");
       qc.invalidateQueries({ queryKey: ["purchase_orders"] });
       onOpenChange(false);
     } else {

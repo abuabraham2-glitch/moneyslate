@@ -3,8 +3,8 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  LayoutDashboard, Users, Truck, FileText, ClipboardList, Receipt,
-  CreditCard, Banknote, BarChart3, Settings, LogOut, Sun, Moon, Monitor, Menu, X, Wallet,
+  LayoutDashboard, User, Building2, FileText, FileCheck, FileSpreadsheet,
+  Scale, CheckCircle2, TrendingUp, Settings, LogOut, Sun, Moon, Monitor, Menu, X, Wallet,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";

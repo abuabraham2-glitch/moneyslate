@@ -47,6 +47,7 @@ export type POForm = {
   internal_po_number?: string;
   ship_to_name?: string; ship_to_street?: string; ship_to_city?: string; ship_to_state?: string; ship_to_zip?: string;
   notes?: string;
+  memo?: string;
   status?: string;
 };
 
@@ -89,7 +90,7 @@ export function POdialog({
             internal_po_number: data.internal_po_number || "",
             ship_to_name: data.ship_to_name || "", ship_to_street: data.ship_to_street || "",
             ship_to_city: data.ship_to_city || "", ship_to_state: data.ship_to_state || "", ship_to_zip: data.ship_to_zip || "",
-            notes: data.notes || "", status: data.status,
+            notes: data.notes || "", memo: (data as any).memo || "", status: data.status,
           };
           const normalizedLines = normalizeLineItemsForEditor((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order })), "unit_cost");
           setForm(f);
@@ -142,6 +143,7 @@ export function POdialog({
         ship_to_name: form.ship_to_name || null, ship_to_street: form.ship_to_street || null,
         ship_to_city: form.ship_to_city || null, ship_to_state: form.ship_to_state || null, ship_to_zip: form.ship_to_zip || null,
         notes: form.notes || null,
+        memo: form.memo || null,
         subtotal, total, status: statusOverride || form.status || "draft",
       };
       if (id) {
@@ -288,6 +290,10 @@ export function POdialog({
 
           <div className="space-y-1.5"><Label className="text-xs">Vendor Notes</Label>
             <Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </div>
+
+          <div className="space-y-1.5"><Label className="text-xs">Memo (internal — not shown on PDF)</Label>
+            <Textarea rows={2} value={form.memo || ""} onChange={(e) => set("memo", e.target.value)} />
           </div>
         </div>
 

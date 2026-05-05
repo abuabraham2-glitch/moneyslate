@@ -22,6 +22,7 @@ import type { LineItem } from "@/components/line-item-editor";
 export const Route = createFileRoute("/_app/purchase-orders")({ component: POPage });
 
 function POPage() {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);

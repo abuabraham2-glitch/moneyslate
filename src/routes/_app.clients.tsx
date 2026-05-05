@@ -60,7 +60,7 @@ function ClientsPage() {
         title="Clients"
         description="Manage customers and their billing details"
         action={
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>
+          <Button onClick={() => { setEditing(null); setOpen(true); }} style={{ background: "#997839", color: "white" }}>
             <Plus className="h-4 w-4 mr-2" /> New Client
           </Button>
         }

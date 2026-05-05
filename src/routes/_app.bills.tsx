@@ -47,11 +47,26 @@ function BillsPage() {
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
-    return (data || []).filter((r: any) =>
+    const list = (data || []).filter((r: any) =>
       r.bill_number.toLowerCase().includes(s) ||
       (r.vendor?.company_name || "").toLowerCase().includes(s)
     );
-  }, [data, search]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    const get = (r: any) => {
+      switch (sortKey) {
+        case "vendor": return (r.vendor?.company_name || "").toLowerCase();
+        case "bill_date": return r.bill_date || "";
+        case "total": return Number(r.total || 0);
+        case "status": return r.status || "";
+      }
+    };
+    return [...list].sort((a, b) => {
+      const av = get(a), bv = get(b);
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }, [data, search, sortKey, sortDir]);
 
   const markPaid = async (id: string, info: { date_paid: string; payment_method: string; payment_notes?: string }) => {
     const { error } = await supabase.from("bills").update({ status: "paid", ...info }).eq("id", id);
@@ -68,6 +83,27 @@ function BillsPage() {
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["bills"] });
     toast.success("Deleted");
+  };
+
+  const downloadPdf = async (id: string) => {
+    const { data: bill } = await supabase.from("bills").select("*, vendor:vendors(*)").eq("id", id).single();
+    const { data: lines } = await supabase.from("bill_line_items").select("*").eq("bill_id", id).order("sort_order");
+    const { data: settings } = await supabase.from("settings").select("*").limit(1).single();
+    if (!bill) return;
+    const v = bill.vendor;
+    const pdf = generatePDF({
+      type: "bill", number: bill.bill_number, issue_date: bill.bill_date, due_date: bill.due_date || undefined,
+      notes: bill.notes || undefined,
+      subtotal: Number(bill.total), total: Number(bill.total),
+      paidStamp: bill.status === "paid",
+      paidStampColor: [220, 38, 38],
+      party: {
+        name: v?.company_name || "", contact: v?.contact_name ?? undefined, email: v?.email ?? undefined, phone: v?.phone ?? undefined,
+        street: v?.street ?? undefined, city: v?.city ?? undefined, state: v?.state ?? undefined, zip: v?.zip ?? undefined,
+      },
+      lines: (lines || []).map((l: any) => ({ description: l.description, quantity: Number(l.quantity), price: Number(l.unit_cost), total: Number(l.line_total) })),
+    }, (settings || {}) as any);
+    pdf.save(`${bill.bill_number}.pdf`);
   };
 
   const edit = (id: string) => { setEditingId(id); setOpen(true); };

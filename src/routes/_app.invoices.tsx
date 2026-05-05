@@ -147,8 +147,13 @@ function InvoicesPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
-                <Th>Client</Th><Th>Memo</Th><Th>Issued</Th><Th>Due</Th>
-                <Th className="text-right">Amount</Th><Th>Status</Th><Th></Th>
+                <SortTh label="Name" k="name" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th>Memo</Th>
+                <Th>Issued</Th>
+                <SortTh label="Due Date" k="due_date" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <SortTh label="Amount" k="total" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} className="text-right" />
+                <SortTh label="Status" k="status" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th></Th>
               </tr>
             </thead>
             <tbody>

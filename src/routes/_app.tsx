@@ -3,8 +3,8 @@ import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  LayoutDashboard, Users, Truck, FileText, ClipboardList, Receipt,
-  CreditCard, Banknote, BarChart3, Settings, LogOut, Sun, Moon, Monitor, Menu, X, Wallet,
+  LayoutDashboard, User, Building2, FileText, FileCheck, FileSpreadsheet,
+  Scale, CheckCircle2, TrendingUp, Settings, LogOut, Sun, Moon, Monitor, Menu, X, Wallet,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -19,14 +19,14 @@ export const Route = createFileRoute("/_app")({
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/clients", label: "Clients", icon: Users },
-  { to: "/vendors", label: "Vendors", icon: Truck },
+  { to: "/clients", label: "Clients", icon: User },
+  { to: "/vendors", label: "Vendors", icon: Building2 },
   { to: "/invoices", label: "Invoices", icon: FileText },
-  { to: "/purchase-orders", label: "Purchase Orders", icon: ClipboardList },
-  { to: "/bills", label: "Bills", icon: Receipt },
-  { to: "/expenses", label: "Expenses", icon: CreditCard },
-  { to: "/reconciliation", label: "Reconciliation", icon: Banknote },
-  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/purchase-orders", label: "Purchase Orders", icon: FileCheck },
+  { to: "/bills", label: "Bills", icon: FileSpreadsheet },
+  { to: "/expenses", label: "Expenses", icon: Scale },
+  { to: "/reconciliation", label: "Reconciliation", icon: CheckCircle2 },
+  { to: "/reports", label: "Reports", icon: TrendingUp },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -51,7 +51,7 @@ function AppLayout() {
           "fixed lg:sticky top-0 left-0 z-40 h-screen w-64 flex-col transition-transform",
           open ? "flex translate-x-0" : "-translate-x-full lg:translate-x-0 lg:flex"
         )}
-        style={{ background: "#232929", borderRight: "1px solid rgba(212, 229, 210, 0.1)" }}
+        style={{ background: "#2D3838", borderRight: "1px solid rgba(212, 229, 210, 0.1)" }}
       >
         <div
           className="h-16 px-5 flex items-center justify-between"
@@ -107,15 +107,19 @@ function NavLink({ to, label, icon: Icon, onClick }: { to: string; label: string
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+      className="flex items-center rounded-md text-sm font-medium transition-colors"
       style={{
+        gap: 10,
         color: active || hover ? "#D8E5D2" : "#A39E96",
-        background: active ? "rgba(216, 229, 210, 0.08)" : "transparent",
-        borderLeft: active ? "2px solid #D8E5D2" : "2px solid transparent",
-        paddingLeft: active ? 10 : 12,
+        background: active ? "rgba(216, 229, 210, 0.15)" : "transparent",
+        borderLeft: active ? "3px solid #D8E5D2" : "3px solid transparent",
+        paddingLeft: active ? 9 : 12,
+        paddingRight: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
       }}
     >
-      <Icon className="h-4 w-4" />
+      <Icon size={18} />
       {label}
     </Link>
   );
@@ -130,7 +134,7 @@ function UserMenu() {
       <div className="flex items-center gap-2 px-2">
         <div
           className="h-8 w-8 rounded-full grid place-items-center text-xs font-semibold"
-          style={{ background: "#2D3838", color: "#D8E5D2" }}
+          style={{ background: "#232929", color: "#D8E5D2" }}
         >
           {session?.user?.email?.[0]?.toUpperCase() || "U"}
         </div>

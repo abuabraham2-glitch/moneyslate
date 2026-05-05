@@ -57,7 +57,7 @@ function VendorsPage() {
   return (
     <PageContainer>
       <PageHeader title="Vendors" description="Suppliers and contractors"
-        action={<Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4 mr-2" /> New Vendor</Button>} />
+        action={<Button onClick={() => { setEditing(null); setOpen(true); }} style={{ background: "#997839", color: "white" }}><Plus className="h-4 w-4 mr-2" /> New Vendor</Button>} />
 
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-sm">

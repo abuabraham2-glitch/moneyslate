@@ -6,7 +6,7 @@ import { PageContainer, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Search, MoreHorizontal, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -22,6 +22,8 @@ import type { LineItem } from "@/components/line-item-editor";
 
 export const Route = createFileRoute("/_app/purchase-orders")({ component: POPage });
 
+type SortKey = "vendor" | "issue_date" | "total" | "status";
+
 function POPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -30,6 +32,13 @@ function POPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [billOpen, setBillOpen] = useState(false);
   const [billPrefill, setBillPrefill] = useState<{ vendor_id: string; linked_po_id: string; lines: LineItem[]; po_number?: string } | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("issue_date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  const toggleSort = (k: SortKey) => {
+    if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(k); setSortDir(k === "issue_date" ? "desc" : "asc"); }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["purchase_orders"],
@@ -41,11 +50,26 @@ function POPage() {
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
-    return (data || []).filter((r: any) =>
+    const list = (data || []).filter((r: any) =>
       r.po_number.toLowerCase().includes(s) ||
       (r.vendor?.company_name || "").toLowerCase().includes(s)
     );
-  }, [data, search]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    const get = (r: any) => {
+      switch (sortKey) {
+        case "vendor": return (r.vendor?.company_name || "").toLowerCase();
+        case "issue_date": return r.issue_date || "";
+        case "total": return Number(r.total || 0);
+        case "status": return r.status || "";
+      }
+    };
+    return [...list].sort((a, b) => {
+      const av = get(a), bv = get(b);
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }, [data, search, sortKey, sortDir]);
 
   const convertToBill = async (id: string) => {
     const { data: po } = await supabase.from("purchase_orders").select("*").eq("id", id).single();

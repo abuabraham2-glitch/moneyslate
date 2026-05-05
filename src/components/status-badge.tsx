@@ -12,6 +12,7 @@ const styles: Record<Variant, string> = {
   unpaid: "bg-warning/15 text-warning border border-warning/30",
   received: "bg-primary/15 text-primary border border-primary/30",
   billed: "bg-success/15 text-success border border-success/30",
+  completed: "bg-success/15 text-success border border-success/30",
   ignored: "bg-muted text-muted-foreground border border-border",
   matched: "bg-success/15 text-success border border-success/30",
   unmatched: "bg-warning/15 text-warning border border-warning/30",

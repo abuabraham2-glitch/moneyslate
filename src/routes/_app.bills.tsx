@@ -126,8 +126,13 @@ function BillsPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
-                <Th>Bill #</Th><Th>Vendor</Th><Th>Bill Date</Th><Th>Due</Th>
-                <Th className="text-right">Amount</Th><Th>Status</Th><Th></Th>
+                <Th>Bill #</Th>
+                <SortTh label="Vendor" k="vendor" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <SortTh label="Bill Date" k="bill_date" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th>Due</Th>
+                <SortTh label="Amount" k="total" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} className="text-right" />
+                <SortTh label="Status" k="status" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <Th></Th>
               </tr>
             </thead>
             <tbody>
@@ -147,6 +152,7 @@ function BillsPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => edit(r.id)}>Edit</DropdownMenuItem>
                         {r.status !== "paid" && <DropdownMenuItem onClick={() => setPayingId(r.id)}>Mark Paid</DropdownMenuItem>}
+                        <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive" onClick={() => remove(r.id)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>

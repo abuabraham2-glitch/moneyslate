@@ -28,6 +28,7 @@ export type InvoiceForm = {
   client_po_number?: string;
   payment_terms?: string;
   notes?: string;
+  memo?: string;
   tax_amount: number;
   status?: string;
 };
@@ -71,7 +72,7 @@ export function InvoiceDialog({
             id: data.id, invoice_number: data.invoice_number, client_id: data.client_id,
             issue_date: data.issue_date, due_date: data.due_date || data.issue_date,
             client_po_number: data.client_po_number || "", payment_terms: data.payment_terms || "",
-            notes: data.notes || "", tax_amount: Number(data.tax_amount || 0), status: data.status,
+            notes: data.notes || "", memo: (data as any).memo || "", tax_amount: Number(data.tax_amount || 0), status: data.status,
           };
           const normalizedLines = normalizeLineItemsForEditor((li || []).map((l: any) => ({ id: l.id, product_service_id: l.product_service_id, description: l.description, quantity: Number(l.quantity), unit_price: Number(l.unit_price), line_total: Number(l.line_total), sort_order: l.sort_order })), "unit_price");
           setForm(f);
@@ -131,6 +132,7 @@ export function InvoiceDialog({
         client_po_number: form.client_po_number || null,
         payment_terms: form.payment_terms || null,
         notes: form.notes || null,
+        memo: form.memo || null,
         subtotal, tax_amount: Number(form.tax_amount || 0), total,
         status: statusOverride || form.status || "draft",
       };
@@ -264,6 +266,10 @@ export function InvoiceDialog({
 
           <div className="space-y-1.5"><Label className="text-xs">Notes</Label>
             <Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </div>
+
+          <div className="space-y-1.5"><Label className="text-xs">Memo (internal — not shown on PDF)</Label>
+            <Textarea rows={2} value={form.memo || ""} onChange={(e) => set("memo", e.target.value)} />
           </div>
         </div>
 

@@ -284,7 +284,7 @@ export function POdialog({
             </div>
           </div>
 
-          <div className="space-y-1.5"><Label className="text-xs">Notes</Label>
+          <div className="space-y-1.5"><Label className="text-xs">Vendor Notes</Label>
             <Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} />
           </div>
         </div>

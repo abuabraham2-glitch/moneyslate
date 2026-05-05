@@ -13,6 +13,7 @@ import {
 import { formatCurrency, formatDate } from "@/lib/format";
 import { StatusBadge } from "@/components/status-badge";
 import { InvoiceDialog } from "@/components/invoice-dialog";
+import { MemoCell } from "@/components/memo-cell";
 import { MarkPaidDialog } from "@/components/mark-paid-dialog";
 import { generatePDF } from "@/lib/pdf";
 import { logActivity } from "@/lib/activity";
@@ -121,7 +122,7 @@ function InvoicesPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
-                <Th>Invoice #</Th><Th>Client</Th><Th>Issue</Th><Th>Due</Th>
+                <Th>Client</Th><Th>Memo</Th><Th>Issued</Th><Th>Due</Th>
                 <Th className="text-right">Amount</Th><Th>Status</Th><Th></Th>
               </tr>
             </thead>
@@ -129,9 +130,14 @@ function InvoicesPage() {
               {isLoading ? <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Loading…</td></tr>
                 : filtered.length === 0 ? <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">No invoices yet.</td></tr>
                 : filtered.map((r: any) => (
-                <tr key={r.id} className="border-t border-border hover:bg-muted/30 transition-colors">
-                  <Td><button onClick={() => editInvoice(r.id)} className="font-medium hover:text-primary">{r.invoice_number}</button></Td>
-                  <Td>{r.client?.company_name || "—"}</Td>
+                <tr key={r.id} className="border-t border-border hover:bg-muted/30 transition-colors align-top">
+                  <Td>
+                    <button onClick={() => editInvoice(r.id)} className="font-medium hover:text-primary text-left">
+                      {r.client?.company_name || "—"}
+                    </button>
+                    <div className="text-xs text-muted-foreground">{r.invoice_number}</div>
+                  </Td>
+                  <Td><MemoCell table="invoices" id={r.id} value={r.memo} onSaved={() => qc.invalidateQueries({ queryKey: ["invoices"] })} /></Td>
                   <Td>{formatDate(r.issue_date)}</Td>
                   <Td>{formatDate(r.due_date)}</Td>
                   <Td className="text-right font-medium tabular-nums">{formatCurrency(r.total)}</Td>

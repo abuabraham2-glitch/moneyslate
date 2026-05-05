@@ -13,6 +13,7 @@ import {
 import { formatCurrency, formatDate } from "@/lib/format";
 import { StatusBadge } from "@/components/status-badge";
 import { POdialog } from "@/components/po-dialog";
+import { MemoCell } from "@/components/memo-cell";
 import { BillDialog } from "@/components/bill-dialog";
 import { generatePDF } from "@/lib/pdf";
 import { logActivity } from "@/lib/activity";
@@ -138,7 +139,7 @@ function POPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
-                <Th>PO #</Th><Th>Vendor</Th><Th>Issue</Th><Th>Expected</Th>
+                <Th>Vendor</Th><Th>Memo</Th><Th>Issued</Th><Th>Expected</Th>
                 <Th className="text-right">Amount</Th><Th>Status</Th><Th></Th>
               </tr>
             </thead>
@@ -146,9 +147,14 @@ function POPage() {
               {isLoading ? <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Loading…</td></tr>
                 : filtered.length === 0 ? <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">No purchase orders yet.</td></tr>
                 : filtered.map((r: any) => (
-                <tr key={r.id} className="border-t border-border hover:bg-muted/30 transition-colors">
-                  <Td><button onClick={() => edit(r.id)} className="font-medium hover:text-primary">{r.po_number}</button></Td>
-                  <Td>{r.vendor?.company_name || "—"}</Td>
+                <tr key={r.id} className="border-t border-border hover:bg-muted/30 transition-colors align-top">
+                  <Td>
+                    <button onClick={() => edit(r.id)} className="font-medium hover:text-primary text-left">
+                      {r.vendor?.company_name || "—"}
+                    </button>
+                    <div className="text-xs text-muted-foreground">{r.po_number}</div>
+                  </Td>
+                  <Td><MemoCell table="purchase_orders" id={r.id} value={r.memo} onSaved={() => qc.invalidateQueries({ queryKey: ["purchase_orders"] })} /></Td>
                   <Td>{formatDate(r.issue_date)}</Td>
                   <Td>{formatDate(r.expected_delivery_date)}</Td>
                   <Td className="text-right font-medium tabular-nums">{formatCurrency(r.total)}</Td>

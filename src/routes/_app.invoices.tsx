@@ -207,3 +207,14 @@ function InvoicesPage() {
 
 function Th({ children, className = "" }: any) { return <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wide ${className}`}>{children}</th>; }
 function Td({ children, className = "" }: any) { return <td className={`px-4 py-3 ${className}`}>{children}</td>; }
+function SortTh({ label, k, sortKey, sortDir, onSort, className = "" }: { label: string; k: SortKey; sortKey: SortKey; sortDir: "asc" | "desc"; onSort: (k: SortKey) => void; className?: string }) {
+  const active = sortKey === k;
+  const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wide ${className}`}>
+      <button type="button" onClick={() => onSort(k)} className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${active ? "text-foreground" : ""} ${className.includes("text-right") ? "ml-auto" : ""}`}>
+        <span>{label}</span><Icon className="h-3 w-3" />
+      </button>
+    </th>
+  );
+}

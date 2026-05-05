@@ -137,6 +137,7 @@ export function BillDialog({
       setLines(linesToSave);
       setBaseline(JSON.stringify({ f: { ...form, id, bill_number, status: payload.status }, li: linesToSave }));
       toast.success("Bill saved");
+      onSaved?.({ id: id!, bill_number: bill_number! });
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);

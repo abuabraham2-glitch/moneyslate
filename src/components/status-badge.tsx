@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { isOverdue } from "@/lib/format";
 
-type Variant = "draft" | "sent" | "paid" | "overdue" | "unpaid" | "received" | "billed" | "ignored" | "matched" | "unmatched";
+type Variant = "draft" | "sent" | "paid" | "overdue" | "unpaid" | "received" | "billed" | "completed" | "ignored" | "matched" | "unmatched";
 
 const styles: Record<Variant, string> = {
   draft: "bg-muted text-muted-foreground border border-border",

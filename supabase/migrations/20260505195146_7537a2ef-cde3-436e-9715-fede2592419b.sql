@@ -1,0 +1,1 @@
+ALTER TYPE public.po_status RENAME VALUE 'billed' TO 'completed';

@@ -1,256 +1,248 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { PageContainer, PageHeader } from "@/components/page-header";
-import { StatCard } from "@/components/stat-card";
-import { DateRangeFilter, getPresetRange, type DateRange } from "@/components/date-range-filter";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { formatCurrency, formatDate } from "@/lib/format";
-import {
-  TrendingUp, TrendingDown, DollarSign, FileText, AlertCircle, Receipt,
-} from "lucide-react";
-import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, Legend,
-} from "recharts";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_app/dashboard")({ component: Dashboard });
 
-function Dashboard() {
-  const [range, setRange] = useState<DateRange>(() => ({ preset: "this_month", ...getPresetRange("this_month") }));
+function relativeDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const target = new Date(dateStr.length === 10 ? dateStr + "T00:00:00" : dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const t = new Date(target);
+  t.setHours(0, 0, 0, 0);
+  const diff = Math.round((t.getTime() - today.getTime()) / 86400000);
+  if (diff === 0) return "today";
+  if (diff === -1) return "yesterday";
+  if (diff === 1) return "tomorrow";
+  if (diff < 0 && diff >= -6) return `${-diff} days ago`;
+  if (diff > 0 && diff <= 6) return `in ${diff} days`;
+  if (diff > 6 && diff <= 13) return "in a week";
+  if (diff < -6 && diff >= -13) return "a week ago";
+  if (diff > 0) return `in ${Math.round(diff / 7)} weeks`;
+  return `${Math.round(-diff / 7)} weeks ago`;
+}
 
-  const { data: kpis } = useQuery({
-    queryKey: ["dashboard-kpis", range.from, range.to],
+function fmtMoney(n: number): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n || 0);
+}
+
+function Dashboard() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const firstName = ((user?.user_metadata as any)?.first_name)
+    || (user?.user_metadata as any)?.full_name?.split(" ")[0]
+    || (user?.email ? user.email.split("@")[0] : "there");
+
+  const now = new Date();
+  const dateLine = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).replace(",", " ·");
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+  const { data: actions } = useQuery({
+    queryKey: ["dash-actions"],
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const in14 = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
 
-      const [revenue, paidBills, expenses, openInv, overdueInv, billsSoon] = await Promise.all([
-        supabase.from("invoices").select("total").eq("status", "paid").gte("date_paid", range.from).lte("date_paid", range.to),
-        supabase.from("bills").select("total").eq("status", "paid").gte("date_paid", range.from).lte("date_paid", range.to),
-        supabase.from("expenses").select("amount").gte("expense_date", range.from).lte("expense_date", range.to),
+      const [draftsRes, billsRes] = await Promise.all([
+        supabase
+          .from("invoices")
+          .select("id, invoice_number, total, created_at, client:clients(company_name), invoice_line_items(id)")
+          .eq("status", "draft")
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("bills")
+          .select("id, total, due_date, vendor:vendors(company_name)")
+          .eq("status", "unpaid")
+          .not("due_date", "is", null)
+          .lte("due_date", in14)
+          .gte("due_date", today)
+          .order("due_date", { ascending: true })
+          .limit(1),
+      ]);
+
+      const drafts = (draftsRes.data || []).filter((i: any) => (i.invoice_line_items || []).length > 0);
+      const sendable = drafts[0] || null;
+      const bill = (billsRes.data || [])[0] || null;
+      const allDrafts = draftsRes.data || [];
+
+      return { sendable, bill, allDrafts };
+    },
+  });
+
+  const { data: kpis } = useQuery({
+    queryKey: ["dash-kpis"],
+    queryFn: async () => {
+      const start = new Date();
+      start.setDate(1);
+      const startStr = start.toISOString().slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10);
+      const in30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+      const [invMonth, billsMonth, expMonth, openInv, billsDue] = await Promise.all([
+        supabase.from("invoices").select("total").gte("issue_date", startStr),
+        supabase.from("bills").select("total").gte("bill_date", startStr),
+        supabase.from("expenses").select("amount").gte("expense_date", startStr),
         supabase.from("invoices").select("total").neq("status", "paid"),
-        supabase.from("invoices").select("total").neq("status", "paid").lt("due_date", today),
-        supabase.from("bills").select("total").eq("status", "unpaid").lte("due_date", in14).gte("due_date", today),
+        supabase.from("bills").select("total").eq("status", "unpaid").gte("due_date", today).lte("due_date", in30),
       ]);
 
       const sum = (rows: any[] | null, key: string) => (rows || []).reduce((a, r) => a + Number(r[key] || 0), 0);
-      const rev = sum(revenue.data, "total");
-      const exp = sum(paidBills.data, "total") + sum(expenses.data, "amount");
       return {
-        revenue: rev,
-        expenses: exp,
-        net: rev - exp,
-        outstanding: sum(openInv.data, "total"),
-        overdue: sum(overdueInv.data, "total"),
-        billsSoon: sum(billsSoon.data, "total"),
+        revenue: sum(invMonth.data, "total"),
+        expenses: sum(billsMonth.data, "total") + sum(expMonth.data, "amount"),
+        openAR: sum(openInv.data, "total"),
+        billsDue: sum(billsDue.data, "total"),
       };
     },
   });
 
-  const { data: trend } = useQuery({
-    queryKey: ["dashboard-trend"],
-    queryFn: async () => {
-      const start = new Date();
-      start.setMonth(start.getMonth() - 11);
-      start.setDate(1);
-      const startStr = start.toISOString().slice(0, 10);
-      const [inv, bills, exps] = await Promise.all([
-        supabase.from("invoices").select("total,date_paid").eq("status", "paid").gte("date_paid", startStr),
-        supabase.from("bills").select("total,date_paid").eq("status", "paid").gte("date_paid", startStr),
-        supabase.from("expenses").select("amount,expense_date").gte("expense_date", startStr),
-      ]);
-      const months: Record<string, { month: string; revenue: number; expenses: number }> = {};
-      for (let i = 0; i < 12; i++) {
-        const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
-        const key = d.toISOString().slice(0, 7);
-        months[key] = { month: d.toLocaleDateString("en-US", { month: "short" }), revenue: 0, expenses: 0 };
-      }
-      (inv.data || []).forEach((r) => { const k = (r.date_paid || "").slice(0, 7); if (months[k]) months[k].revenue += Number(r.total); });
-      (bills.data || []).forEach((r) => { const k = (r.date_paid || "").slice(0, 7); if (months[k]) months[k].expenses += Number(r.total); });
-      (exps.data || []).forEach((r) => { const k = (r.expense_date || "").slice(0, 7); if (months[k]) months[k].expenses += Number(r.amount); });
-      return Object.values(months);
-    },
-  });
+  const items: React.ReactNode[] = [];
 
-  const { data: invStatus } = useQuery({
-    queryKey: ["dashboard-inv-status"],
-    queryFn: async () => {
-      const today = new Date().toISOString().slice(0, 10);
-      const { data } = await supabase.from("invoices").select("status,due_date,total");
-      const buckets = { paid: 0, sent: 0, overdue: 0, draft: 0 };
-      (data || []).forEach((r: any) => {
-        if (r.status === "paid") buckets.paid += Number(r.total);
-        else if (r.status === "draft") buckets.draft += Number(r.total);
-        else if (r.due_date && r.due_date < today) buckets.overdue += Number(r.total);
-        else buckets.sent += Number(r.total);
-      });
-      return [
-        { name: "Paid", value: buckets.paid, color: "var(--success)" },
-        { name: "Sent", value: buckets.sent, color: "var(--warning)" },
-        { name: "Overdue", value: buckets.overdue, color: "var(--destructive)" },
-        { name: "Draft", value: buckets.draft, color: "var(--muted-foreground)" },
-      ].filter((b) => b.value > 0);
-    },
-  });
+  if (actions?.sendable) {
+    const inv: any = actions.sendable;
+    items.push(
+      <ActionItem
+        key="send"
+        title={`Send ${inv.invoice_number} to ${inv.client?.company_name || "client"}`}
+        description={`Order completed ${relativeDate(inv.created_at)} · ${fmtMoney(Number(inv.total))}`}
+        button={{ label: "Send", primary: true, onClick: () => navigate({ to: "/invoices/$id", params: { id: inv.id } }) }}
+      />,
+    );
+  }
 
-  const { data: topClients } = useQuery({
-    queryKey: ["dashboard-top-clients"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("invoices")
-        .select("total,client:clients(company_name)")
-        .eq("status", "paid");
-      const map: Record<string, number> = {};
-      (data || []).forEach((r: any) => {
-        const name = r.client?.company_name || "—";
-        map[name] = (map[name] || 0) + Number(r.total);
-      });
-      return Object.entries(map)
-        .map(([name, total]) => ({ name, total }))
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 5);
-    },
-  });
+  if (actions?.bill) {
+    const b: any = actions.bill;
+    items.push(
+      <ActionItem
+        key="pay"
+        dot
+        title={`Pay ${b.vendor?.company_name || "vendor"} bill`}
+        description={`Due ${relativeDate(b.due_date)} · ${fmtMoney(Number(b.total))}`}
+        button={{ label: "Pay", onClick: () => navigate({ to: "/bills/$id", params: { id: b.id } }) }}
+      />,
+    );
+  }
 
-  const { data: activity } = useQuery({
-    queryKey: ["dashboard-activity"],
-    queryFn: async () => {
-      const { data } = await supabase.from("activity_log").select("*").order("created_at", { ascending: false }).limit(10);
-      return data || [];
-    },
-  });
-
-  const { data: upcomingInv } = useQuery({
-    queryKey: ["dashboard-upcoming-inv"],
-    queryFn: async () => {
-      const { data } = await supabase.from("invoices").select("id,invoice_number,total,due_date,client:clients(company_name)").neq("status", "paid").order("due_date").limit(7);
-      return data || [];
-    },
-  });
-
-  const { data: upcomingBills } = useQuery({
-    queryKey: ["dashboard-upcoming-bills"],
-    queryFn: async () => {
-      const { data } = await supabase.from("bills").select("id,bill_number,total,due_date,vendor:vendors(company_name)").eq("status", "unpaid").order("due_date").limit(7);
-      return data || [];
-    },
-  });
+  if (actions?.allDrafts && actions.allDrafts.length > 0) {
+    const drafts = actions.allDrafts;
+    const numbers = drafts.slice(0, 3).map((d: any) => d.invoice_number).join(", ") + (drafts.length > 3 ? "…" : "");
+    const oldest = drafts[0]?.created_at;
+    items.push(
+      <ActionItem
+        key="review"
+        title={`Review ${drafts.length} draft invoice${drafts.length === 1 ? "" : "s"}`}
+        description={`${numbers} · waiting since ${relativeDate(oldest)}`}
+        button={{ label: "Review", onClick: () => navigate({ to: "/invoices" }) }}
+      />,
+    );
+  }
 
   return (
-    <PageContainer>
-      <PageHeader
-        title="Dashboard"
-        description="Real-time view of your finances"
-        action={<DateRangeFilter value={range} onChange={setRange} />}
-      />
+    <div style={{ background: "#232929", minHeight: "100%", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 880, margin: "0 auto", fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif" }}>
+        {/* Greeting */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: "#A39E96", letterSpacing: "0.5px" }}>{dateLine}</div>
+          <h1 style={{ fontSize: 22, fontWeight: 500, color: "#D8E5D2", margin: "4px 0 0" }}>
+            {greeting}, {firstName}
+          </h1>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <StatCard label="Revenue" value={formatCurrency(kpis?.revenue)} tone="success" icon={<TrendingUp className="h-4 w-4" />} />
-        <StatCard label="Expenses" value={formatCurrency(kpis?.expenses)} tone="destructive" icon={<TrendingDown className="h-4 w-4" />} />
-        <StatCard label="Net Profit" value={formatCurrency(kpis?.net)} tone={(kpis?.net ?? 0) >= 0 ? "success" : "destructive"} icon={<DollarSign className="h-4 w-4" />} />
-        <StatCard label="Outstanding Invoices" value={formatCurrency(kpis?.outstanding)} hint="All open" icon={<FileText className="h-4 w-4" />} />
-        <StatCard label="Overdue Invoices" value={formatCurrency(kpis?.overdue)} tone="destructive" icon={<AlertCircle className="h-4 w-4" />} />
-        <StatCard label="Bills Due Soon" value={formatCurrency(kpis?.billsSoon)} hint="Next 14 days" tone="warning" icon={<Receipt className="h-4 w-4" />} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <Card className="lg:col-span-2 shadow-card">
-          <CardHeader><CardTitle className="text-base">Revenue vs Expenses · Last 12 months</CardTitle></CardHeader>
-          <CardContent className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trend || []}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
-                <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8 }} formatter={(v: any) => formatCurrency(v)} />
-                <Legend />
-                <Bar dataKey="revenue" fill="var(--success)" name="Revenue" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expenses" fill="var(--destructive)" name="Expenses" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader><CardTitle className="text-base">Invoice Status</CardTitle></CardHeader>
-          <CardContent className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={invStatus || []} dataKey="value" nameKey="name" innerRadius={50} outerRadius={85} paddingAngle={2}>
-                  {(invStatus || []).map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip formatter={(v: any) => formatCurrency(v)} contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8 }} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="shadow-card">
-          <CardHeader><CardTitle className="text-base">Top Clients by Revenue</CardTitle></CardHeader>
-          <CardContent className="h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topClients || []} layout="vertical">
-                <XAxis type="number" stroke="var(--muted-foreground)" fontSize={11} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
-                <YAxis dataKey="name" type="category" stroke="var(--muted-foreground)" fontSize={11} width={90} />
-                <Tooltip formatter={(v: any) => formatCurrency(v)} contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8 }} />
-                <Bar dataKey="total" fill="var(--primary)" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader><CardTitle className="text-base">Upcoming Invoices</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {(upcomingInv || []).length === 0 && <p className="text-sm text-muted-foreground">No open invoices</p>}
-            {(upcomingInv || []).map((i: any) => (
-              <div key={i.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border last:border-0">
-                <div>
-                  <p className="font-medium">{i.invoice_number}</p>
-                  <p className="text-xs text-muted-foreground">{i.client?.company_name} · {formatDate(i.due_date)}</p>
-                </div>
-                <span className="font-medium">{formatCurrency(i.total)}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader><CardTitle className="text-base">Bills Due Soon</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {(upcomingBills || []).length === 0 && <p className="text-sm text-muted-foreground">No bills due</p>}
-            {(upcomingBills || []).map((b: any) => (
-              <div key={b.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border last:border-0">
-                <div>
-                  <p className="font-medium">{b.bill_number}</p>
-                  <p className="text-xs text-muted-foreground">{b.vendor?.company_name} · {formatDate(b.due_date)}</p>
-                </div>
-                <span className="font-medium">{formatCurrency(b.total)}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="shadow-card mt-6">
-        <CardHeader><CardTitle className="text-base">Recent Activity</CardTitle></CardHeader>
-        <CardContent>
-          {(activity || []).length === 0 && <p className="text-sm text-muted-foreground">No activity yet</p>}
-          <div className="space-y-2">
-            {(activity || []).map((a: any) => (
-              <div key={a.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border last:border-0">
-                <span>{a.description}</span>
-                <span className="text-xs text-muted-foreground">{formatDate(a.created_at)}</span>
-              </div>
-            ))}
+        {/* Hero */}
+        {items.length === 0 ? (
+          <div style={{ textAlign: "center", color: "#A39E96", fontSize: 14, padding: "40px 0" }}>All clear!</div>
+        ) : (
+          <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 20, marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: "#232929" }}>
+                {items.length} thing{items.length === 1 ? "" : "s"} need{items.length === 1 ? "s" : ""} your attention today
+              </span>
+              <span style={{ fontSize: 12, color: "#4A5A5A" }}>~{items.length * 3 + 1} min</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{items}</div>
           </div>
-        </CardContent>
-      </Card>
-    </PageContainer>
+        )}
+
+        {/* KPI strip */}
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11, color: "#A39E96", marginBottom: 8, letterSpacing: "0.5px" }}>This month at a glance</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+            <KpiCard label="Revenue" value={fmtMoney(kpis?.revenue ?? 0)} />
+            <KpiCard label="Expenses" value={fmtMoney(kpis?.expenses ?? 0)} />
+            <KpiCard label="Open AR" value={fmtMoney(kpis?.openAR ?? 0)} />
+            <KpiCard label="Bills due" value={fmtMoney(kpis?.billsDue ?? 0)} />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign: "center", paddingTop: 16 }}>
+          <Link to="/reports" style={{ fontSize: 13, color: "#A39E96", textDecoration: "none" }}>
+            See charts and reports →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActionItem({
+  title,
+  description,
+  button,
+  dot,
+}: {
+  title: string;
+  description: string;
+  button: { label: string; onClick: () => void; primary?: boolean };
+  dot?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        background: "#C8D7C0",
+        borderRadius: 8,
+        padding: "12px 14px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 12,
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 14, color: "#232929", fontWeight: 500, display: "flex", alignItems: "center", gap: 8 }}>
+          {dot && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#997839", display: "inline-block" }} />}
+          <span>{title}</span>
+        </div>
+        <div style={{ fontSize: 12, color: "#4A5A5A", marginTop: 2, marginLeft: dot ? 14 : 0 }}>{description}</div>
+      </div>
+      <button
+        onClick={button.onClick}
+        style={{
+          fontSize: 13,
+          padding: "6px 14px",
+          borderRadius: 8,
+          fontWeight: 500,
+          cursor: "pointer",
+          background: button.primary ? "#232929" : "transparent",
+          color: button.primary ? "#D8E5D2" : "#232929",
+          border: button.primary ? "none" : "0.5px solid rgba(35,41,41,0.3)",
+          flexShrink: 0,
+        }}
+      >
+        {button.label}
+      </button>
+    </div>
+  );
+}
+
+function KpiCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ background: "#2D3838", borderRadius: 8, padding: "12px 14px" }}>
+      <div style={{ fontSize: 11, color: "#A39E96" }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 500, color: "#D8E5D2", marginTop: 2 }}>{value}</div>
+    </div>
   );
 }

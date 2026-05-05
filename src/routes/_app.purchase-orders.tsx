@@ -132,7 +132,7 @@ function POPage() {
       <PageHeader
         title="Purchase Orders"
         description="Send POs to vendors, convert to bills"
-        action={<Button onClick={() => { setEditingId(null); setOpen(true); }}><Plus className="h-4 w-4 mr-2" /> New PO</Button>}
+        action={<Button onClick={() => { setEditingId(null); setOpen(true); }} style={{ background: "#997839", color: "white" }}><Plus className="h-4 w-4 mr-2" /> New PO</Button>}
       />
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-sm">

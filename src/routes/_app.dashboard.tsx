@@ -33,7 +33,8 @@ function Dashboard() {
   const { session } = useAuth();
   const user = session?.user;
   const meta = (user?.user_metadata as any) || {};
-  const firstName = meta.first_name || meta.full_name?.split(" ")[0] || (user?.email ? user.email.split("@")[0] : "there");
+  const rawFirst = meta.first_name || meta.full_name?.split(" ")[0] || (user?.email ? user.email.split("@")[0] : "there");
+  const firstName = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1) : rawFirst;
 
   const now = new Date();
   const dateLine = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).replace(",", " ·");
@@ -151,18 +152,28 @@ function Dashboard() {
           </h1>
         </div>
 
-        {/* Hero */}
+        {/* Two-column: action card + revenue trend */}
         {items.length === 0 ? (
           <div style={{ textAlign: "center", color: "#A39E96", fontSize: 14, padding: "40px 0" }}>All clear!</div>
         ) : (
-          <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 20, marginBottom: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: "#232929" }}>
-                {items.length} thing{items.length === 1 ? "" : "s"} need{items.length === 1 ? "s" : ""} your attention today
-              </span>
-              <span style={{ fontSize: 12, color: "#4A5A5A" }}>~{items.length * 3 + 1} min</span>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 20,
+              marginBottom: 18,
+            }}
+          >
+            <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: "#232929" }}>
+                  {items.length} thing{items.length === 1 ? "" : "s"} need{items.length === 1 ? "s" : ""} your attention today
+                </span>
+                <span style={{ fontSize: 12, color: "#4A5A5A" }}>~{items.length * 3 + 1} min</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{items}</div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{items}</div>
+            <RevenueTrendCard amount={kpis?.revenue ?? 0} />
           </div>
         )}
 
@@ -226,9 +237,9 @@ function ActionItem({
           borderRadius: 8,
           fontWeight: 500,
           cursor: "pointer",
-          background: button.primary ? "#232929" : "transparent",
-          color: button.primary ? "#D8E5D2" : "#232929",
-          border: button.primary ? "none" : "0.5px solid rgba(35,41,41,0.3)",
+          background: "#232929",
+          color: "#D8E5D2",
+          border: "none",
           flexShrink: 0,
         }}
       >
@@ -243,6 +254,41 @@ function KpiCard({ label, value }: { label: string; value: string }) {
     <div style={{ background: "#2D3838", borderRadius: 8, padding: "12px 14px" }}>
       <div style={{ fontSize: 11, color: "#A39E96" }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 500, color: "#D8E5D2", marginTop: 2 }}>{value}</div>
+    </div>
+  );
+}
+
+function RevenueTrendCard({ amount }: { amount: number }) {
+  // Soft sine-like wave path
+  const w = 320;
+  const h = 90;
+  const points: string[] = [];
+  const samples = 40;
+  for (let i = 0; i <= samples; i++) {
+    const x = (i / samples) * w;
+    const y = h / 2 + Math.sin((i / samples) * Math.PI * 2.2) * 18 + Math.sin((i / samples) * Math.PI * 5) * 5;
+    points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  const linePath = `M ${points.join(" L ")}`;
+  const fillPath = `${linePath} L ${w},${h} L 0,${h} Z`;
+
+  return (
+    <div style={{ background: "#2D3838", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+        <span style={{ fontSize: 14, fontWeight: 500, color: "#D8E5D2" }}>Revenue Trend</span>
+        <span style={{ fontSize: 11, color: "#A39E96", letterSpacing: "0.5px" }}>THIS MONTH</span>
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 500, color: "#D8E5D2", marginBottom: 10 }}>{fmtMoney(amount)}</div>
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: "100%", height: 100, marginTop: "auto" }}>
+        <defs>
+          <linearGradient id="waveFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#D8E5D2" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#D8E5D2" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={fillPath} fill="url(#waveFill)" />
+        <path d={linePath} fill="none" stroke="#D8E5D2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
     </div>
   );
 }

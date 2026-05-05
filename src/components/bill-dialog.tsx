@@ -117,9 +117,9 @@ export function BillDialog({
         const { data, error } = await supabase.from("bills").insert({ ...payload, bill_number }).select().single();
         if (error) throw error;
         id = data.id;
-        // If linked PO, flip its status to billed
+        // If linked PO, flip its status to completed
         if (form.linked_po_id) {
-          await supabase.from("purchase_orders").update({ status: "billed" }).eq("id", form.linked_po_id);
+          await supabase.from("purchase_orders").update({ status: "completed" }).eq("id", form.linked_po_id);
         }
       }
       await supabase.from("bill_line_items").delete().eq("bill_id", id!);

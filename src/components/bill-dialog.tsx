@@ -18,6 +18,7 @@ import { shouldAllowDialogClose } from "@/lib/dialog";
 export type BillForm = {
   id?: string;
   bill_number?: string;
+  vendor_bill_number?: string;
   vendor_id: string | null;
   bill_date: string;
   due_date?: string;
@@ -55,8 +56,17 @@ export function BillDialog({
     queryKey: ["sent-pos", form.vendor_id],
     enabled: !!form.vendor_id,
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("id,po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "sent").order("created_at", { ascending: false });
+      const { data } = await supabase.from("purchase_orders").select("id,po_number,internal_po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "sent").order("created_at", { ascending: false });
       return data || [];
+    },
+  });
+
+  const { data: linkedPo } = useQuery({
+    queryKey: ["linked-po-internal", form.linked_po_id],
+    enabled: !!form.linked_po_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("purchase_orders").select("internal_po_number,po_number").eq("id", form.linked_po_id!).maybeSingle();
+      return data;
     },
   });
 
@@ -69,6 +79,7 @@ export function BillDialog({
         if (data) {
           const f: BillForm = {
             id: data.id, bill_number: data.bill_number, vendor_id: data.vendor_id,
+            vendor_bill_number: (data as any).vendor_bill_number || "",
             bill_date: data.bill_date, due_date: data.due_date || "", linked_po_id: data.linked_po_id,
             notes: data.notes || "", status: data.status,
           };
@@ -113,6 +124,7 @@ export function BillDialog({
       const payload: any = {
         vendor_id: form.vendor_id, bill_date: form.bill_date, due_date: form.due_date || null,
         linked_po_id: form.linked_po_id || null,
+        vendor_bill_number: form.vendor_bill_number?.trim() || null,
         notes: form.notes || null, total, status: form.status || "unpaid",
       };
       if (id) {
@@ -183,6 +195,12 @@ export function BillDialog({
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Linked PO (optional)</Label>
               <EntityCombobox value={form.linked_po_id || null} onChange={(id) => set("linked_po_id", id)} options={poOptions} placeholder={form.vendor_id ? "Search received POs…" : "Select vendor first"} />
+            </div>
+            <div className="space-y-1.5"><Label className="text-xs">Vendor Bill Number</Label>
+              <Input value={form.vendor_bill_number || ""} onChange={(e) => set("vendor_bill_number", e.target.value)} placeholder="Vendor's bill #" />
+            </div>
+            <div className="space-y-1.5"><Label className="text-xs">Internal PO #</Label>
+              <Input value={form.linked_po_id ? (linkedPo?.internal_po_number || "") : ""} readOnly disabled placeholder={form.linked_po_id ? "" : "Link a PO to populate"} />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Bill date</Label>
               <Input type="date" value={form.bill_date} onChange={(e) => set("bill_date", e.target.value)} />

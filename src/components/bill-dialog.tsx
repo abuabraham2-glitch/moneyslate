@@ -187,9 +187,6 @@ export function BillDialog({
             <div className="space-y-1.5"><Label className="text-xs">Vendor Bill Number *</Label>
               <Input value={form.bill_number || ""} onChange={(e) => set("bill_number", e.target.value)} placeholder="Vendor's bill #" />
             </div>
-            <div className="space-y-1.5"><Label className="text-xs">Internal PO #</Label>
-              <Input value={form.linked_po_id ? (linkedPo?.internal_po_number || "") : ""} readOnly disabled placeholder={form.linked_po_id ? "" : "Link a PO to populate"} />
-            </div>
             <div className="space-y-1.5"><Label className="text-xs">Bill date</Label>
               <Input type="date" value={form.bill_date} onChange={(e) => set("bill_date", e.target.value)} />
             </div>

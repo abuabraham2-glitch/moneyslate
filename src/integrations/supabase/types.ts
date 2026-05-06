@@ -145,6 +145,7 @@ export type Database = {
           status: Database["public"]["Enums"]["bill_status"]
           total: number
           updated_at: string
+          vendor_bill_number: string | null
           vendor_id: string | null
         }
         Insert: {
@@ -161,6 +162,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["bill_status"]
           total?: number
           updated_at?: string
+          vendor_bill_number?: string | null
           vendor_id?: string | null
         }
         Update: {
@@ -177,6 +179,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["bill_status"]
           total?: number
           updated_at?: string
+          vendor_bill_number?: string | null
           vendor_id?: string | null
         }
         Relationships: [

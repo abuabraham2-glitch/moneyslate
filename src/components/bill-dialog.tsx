@@ -124,6 +124,7 @@ export function BillDialog({
       const payload: any = {
         vendor_id: form.vendor_id, bill_date: form.bill_date, due_date: form.due_date || null,
         linked_po_id: form.linked_po_id || null,
+        vendor_bill_number: form.vendor_bill_number?.trim() || null,
         notes: form.notes || null, total, status: form.status || "unpaid",
       };
       if (id) {

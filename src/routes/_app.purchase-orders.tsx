@@ -80,8 +80,12 @@ function POPage() {
       linked_po_id: po.id,
       po_number: po.po_number,
       lines: (lines || []).map((l: any) => ({
-        description: l.description, quantity: Number(l.quantity),
-        unit_cost: Number(l.unit_cost), line_total: Number(l.line_total), sort_order: l.sort_order,
+        product_service_id: l.product_service_id || null,
+        description: l.description,
+        quantity: Number(l.quantity),
+        unit_cost: Number(l.unit_cost),
+        line_total: Number(l.line_total),
+        sort_order: l.sort_order,
       })),
     });
     setBillOpen(true);

@@ -11,7 +11,6 @@ import { LineItemEditor, type LineItem } from "@/components/line-item-editor";
 import { EntityCombobox } from "@/components/entity-combobox";
 import { formatCurrency } from "@/lib/format";
 import { logActivity } from "@/lib/activity";
-import { getNextDocumentNumber } from "@/lib/document-number";
 import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
 import { shouldAllowDialogClose } from "@/lib/dialog";
 

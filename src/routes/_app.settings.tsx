@@ -75,10 +75,9 @@ function SettingsPage() {
           </CardContent></Card>
 
         <Card className="shadow-card"><CardHeader><CardTitle className="text-base">Numbering</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-3 gap-3">
+          <CardContent className="grid grid-cols-2 gap-3">
             <Field label="Next invoice #"><Input type="number" value={form.next_invoice_number} onChange={(e) => set("next_invoice_number", Number(e.target.value))} /></Field>
             <Field label="Next PO #"><Input type="number" value={form.next_po_number} onChange={(e) => set("next_po_number", Number(e.target.value))} /></Field>
-            <Field label="Next bill #"><Input type="number" value={form.next_bill_number} onChange={(e) => set("next_bill_number", Number(e.target.value))} /></Field>
           </CardContent></Card>
 
         <ProductsServicesSettings />

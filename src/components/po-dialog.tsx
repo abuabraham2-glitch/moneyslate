@@ -98,13 +98,11 @@ export function POdialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
-        // Default Bill To from company settings; auto-fill internal PO #
+        // Default Bill To from company settings. Internal PO # auto-syncs to PO # on save.
         const parsed = parseCompanyAddress(settings?.company_address || "");
-        let internal = "";
-        try { internal = await getNextDocumentNumber("internal_po"); } catch {}
         const f: POForm = {
           vendor_id: null, issue_date: today,
-          internal_po_number: internal,
+          internal_po_number: "",
           ship_to_name: settings?.company_name || "",
           ship_to_street: parsed.street,
           ship_to_city: parsed.city,
@@ -136,10 +134,13 @@ export function POdialog({
       let po_number = form.po_number;
       if (!id && !po_number) po_number = await getNextDocumentNumber("po");
       if (!po_number) throw new Error("Unable to assign a PO number.");
+      // Internal PO # mirrors the numeric portion of the PO # (e.g. PO-1006 -> 1006)
+      const derivedInternal = (po_number.match(/(\d+)$/)?.[1]) || po_number;
+      const internalToSave = form.internal_po_number?.trim() || derivedInternal;
       const payload: any = {
         vendor_id: form.vendor_id, issue_date: form.issue_date,
         expected_delivery_date: form.expected_delivery_date || null,
-        internal_po_number: form.internal_po_number || null,
+        internal_po_number: internalToSave,
         ship_to_name: form.ship_to_name || null, ship_to_street: form.ship_to_street || null,
         ship_to_city: form.ship_to_city || null, ship_to_state: form.ship_to_state || null, ship_to_zip: form.ship_to_zip || null,
         notes: form.notes || null,

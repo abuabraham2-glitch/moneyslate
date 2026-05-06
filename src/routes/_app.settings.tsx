@@ -39,7 +39,6 @@ function SettingsPage() {
       default_tax_rate: form.default_tax_rate,
       next_invoice_number: form.next_invoice_number,
       next_po_number: form.next_po_number,
-      next_bill_number: form.next_bill_number,
       email_webhook_url: form.email_webhook_url,
     }).eq("id", form.id);
     if (error) toast.error(error.message);

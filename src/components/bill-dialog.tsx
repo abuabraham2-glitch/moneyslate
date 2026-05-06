@@ -17,7 +17,6 @@ import { shouldAllowDialogClose } from "@/lib/dialog";
 export type BillForm = {
   id?: string;
   bill_number?: string;
-  vendor_bill_number?: string;
   vendor_id: string | null;
   bill_date: string;
   due_date?: string;

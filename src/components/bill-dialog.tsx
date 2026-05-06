@@ -77,7 +77,6 @@ export function BillDialog({
         if (data) {
           const f: BillForm = {
             id: data.id, bill_number: data.bill_number, vendor_id: data.vendor_id,
-            vendor_bill_number: (data as any).vendor_bill_number || "",
             bill_date: data.bill_date, due_date: data.due_date || "", linked_po_id: data.linked_po_id,
             notes: data.notes || "", status: data.status,
           };

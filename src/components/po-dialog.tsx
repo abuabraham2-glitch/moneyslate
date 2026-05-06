@@ -98,13 +98,11 @@ export function POdialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
-        // Default Bill To from company settings; auto-fill internal PO #
+        // Default Bill To from company settings. Internal PO # auto-syncs to PO # on save.
         const parsed = parseCompanyAddress(settings?.company_address || "");
-        let internal = "";
-        try { internal = await getNextDocumentNumber("internal_po"); } catch {}
         const f: POForm = {
           vendor_id: null, issue_date: today,
-          internal_po_number: internal,
+          internal_po_number: "",
           ship_to_name: settings?.company_name || "",
           ship_to_street: parsed.street,
           ship_to_city: parsed.city,

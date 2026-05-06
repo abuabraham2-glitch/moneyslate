@@ -56,8 +56,17 @@ export function BillDialog({
     queryKey: ["sent-pos", form.vendor_id],
     enabled: !!form.vendor_id,
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("id,po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "sent").order("created_at", { ascending: false });
+      const { data } = await supabase.from("purchase_orders").select("id,po_number,internal_po_number,total").eq("vendor_id", form.vendor_id!).eq("status", "sent").order("created_at", { ascending: false });
       return data || [];
+    },
+  });
+
+  const { data: linkedPo } = useQuery({
+    queryKey: ["linked-po-internal", form.linked_po_id],
+    enabled: !!form.linked_po_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("purchase_orders").select("internal_po_number,po_number").eq("id", form.linked_po_id!).maybeSingle();
+      return data;
     },
   });
 

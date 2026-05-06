@@ -11,14 +11,12 @@ import { LineItemEditor, type LineItem } from "@/components/line-item-editor";
 import { EntityCombobox } from "@/components/entity-combobox";
 import { formatCurrency } from "@/lib/format";
 import { logActivity } from "@/lib/activity";
-import { getNextDocumentNumber } from "@/lib/document-number";
 import { normalizeLineItemsForEditor, sanitizeLineItemsForSave } from "@/lib/line-items";
 import { shouldAllowDialogClose } from "@/lib/dialog";
 
 export type BillForm = {
   id?: string;
   bill_number?: string;
-  vendor_bill_number?: string;
   vendor_id: string | null;
   bill_date: string;
   due_date?: string;
@@ -79,7 +77,6 @@ export function BillDialog({
         if (data) {
           const f: BillForm = {
             id: data.id, bill_number: data.bill_number, vendor_id: data.vendor_id,
-            vendor_bill_number: (data as any).vendor_bill_number || "",
             bill_date: data.bill_date, due_date: data.due_date || "", linked_po_id: data.linked_po_id,
             notes: data.notes || "", status: data.status,
           };
@@ -113,22 +110,20 @@ export function BillDialog({
 
   const save = async () => {
     if (!form.vendor_id) { toast.error("Select a vendor"); return; }
+    const bill_number = form.bill_number?.trim();
+    if (!bill_number) { toast.error("Vendor Bill Number is required"); return; }
     const linesToSave = sanitizeLineItemsForSave(lines, "unit_cost");
     if (linesToSave.length === 0) { toast.error("Add at least one line item"); return; }
     setSaving(true);
     try {
       let id = form.id;
-      let bill_number = form.bill_number;
-      if (!id && !bill_number) bill_number = await getNextDocumentNumber("bill");
-      if (!bill_number) throw new Error("Unable to assign a bill number.");
       const payload: any = {
         vendor_id: form.vendor_id, bill_date: form.bill_date, due_date: form.due_date || null,
         linked_po_id: form.linked_po_id || null,
-        vendor_bill_number: form.vendor_bill_number?.trim() || null,
         notes: form.notes || null, total, status: form.status || "unpaid",
       };
       if (id) {
-        const { error } = await supabase.from("bills").update(payload).eq("id", id);
+        const { error } = await supabase.from("bills").update({ ...payload, bill_number }).eq("id", id);
         if (error) throw error;
       } else {
         const { data, error } = await supabase.from("bills").insert({ ...payload, bill_number }).select().single();
@@ -153,7 +148,7 @@ export function BillDialog({
       setLines(linesToSave);
       setBaseline(JSON.stringify({ f: { ...form, id, bill_number, status: payload.status }, li: linesToSave }));
       toast.success("Bill saved");
-      onSaved?.({ id: id!, bill_number: bill_number! });
+      onSaved?.({ id: id!, bill_number });
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);
@@ -196,8 +191,8 @@ export function BillDialog({
             <div className="space-y-1.5"><Label className="text-xs">Linked PO (optional)</Label>
               <EntityCombobox value={form.linked_po_id || null} onChange={(id) => set("linked_po_id", id)} options={poOptions} placeholder={form.vendor_id ? "Search received POs…" : "Select vendor first"} />
             </div>
-            <div className="space-y-1.5"><Label className="text-xs">Vendor Bill Number</Label>
-              <Input value={form.vendor_bill_number || ""} onChange={(e) => set("vendor_bill_number", e.target.value)} placeholder="Vendor's bill #" />
+            <div className="space-y-1.5"><Label className="text-xs">Vendor Bill Number *</Label>
+              <Input value={form.bill_number || ""} onChange={(e) => set("bill_number", e.target.value)} placeholder="Vendor's bill #" />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Internal PO #</Label>
               <Input value={form.linked_po_id ? (linkedPo?.internal_po_number || "") : ""} readOnly disabled placeholder={form.linked_po_id ? "" : "Link a PO to populate"} />

@@ -145,7 +145,6 @@ export type Database = {
           status: Database["public"]["Enums"]["bill_status"]
           total: number
           updated_at: string
-          vendor_bill_number: string | null
           vendor_id: string | null
         }
         Insert: {
@@ -162,7 +161,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["bill_status"]
           total?: number
           updated_at?: string
-          vendor_bill_number?: string | null
           vendor_id?: string | null
         }
         Update: {
@@ -179,7 +177,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["bill_status"]
           total?: number
           updated_at?: string
-          vendor_bill_number?: string | null
           vendor_id?: string | null
         }
         Relationships: [
@@ -631,7 +628,6 @@ export type Database = {
           default_tax_rate: number | null
           email_webhook_url: string | null
           id: string
-          next_bill_number: number | null
           next_internal_po_number: number | null
           next_invoice_number: number | null
           next_po_number: number | null
@@ -650,7 +646,6 @@ export type Database = {
           default_tax_rate?: number | null
           email_webhook_url?: string | null
           id?: string
-          next_bill_number?: number | null
           next_internal_po_number?: number | null
           next_invoice_number?: number | null
           next_po_number?: number | null
@@ -669,7 +664,6 @@ export type Database = {
           default_tax_rate?: number | null
           email_webhook_url?: string | null
           id?: string
-          next_bill_number?: number | null
           next_internal_po_number?: number | null
           next_invoice_number?: number | null
           next_po_number?: number | null
@@ -734,7 +728,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_next_bill_number: { Args: never; Returns: string }
       get_next_internal_po_number: { Args: never; Returns: string }
       get_next_invoice_number: { Args: never; Returns: string }
       get_next_po_number: { Args: never; Returns: string }

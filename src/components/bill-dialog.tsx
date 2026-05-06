@@ -59,14 +59,7 @@ export function BillDialog({
     },
   });
 
-  const { data: linkedPo } = useQuery({
-    queryKey: ["linked-po-internal", form.linked_po_id],
-    enabled: !!form.linked_po_id,
-    queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("internal_po_number,po_number").eq("id", form.linked_po_id!).maybeSingle();
-      return data;
-    },
-  });
+
 
   useEffect(() => {
     if (!open) return;

@@ -65,7 +65,7 @@ function AppLayout() {
         >
           <Link to="/dashboard" className="flex items-center" style={{ color: "#D8E5D2", fontWeight: 500 }}>
             <CleanSweepsLogo width={72} height={72} />
-            <span style={{ letterSpacing: "0.05em", marginLeft: 16, fontSize: 18 }}>Money Slate</span>
+            <span style={{ letterSpacing: "0.05em", marginLeft: 16, fontSize: 17 }}>Money Slate</span>
           </Link>
           <button className="lg:hidden" style={{ color: "#A39E96" }} onClick={() => setOpen(false)}>
             <X className="h-5 w-5" />
@@ -111,7 +111,7 @@ function NavLink({ to, label, icon: Icon, onClick }: { to: string; label: string
       className="flex items-center rounded-md font-medium"
       style={{
         gap: 14,
-        fontSize: 18,
+        fontSize: 17,
         color: active || hover ? "#D8E5D2" : "#A39E96",
         background: active ? "rgba(216, 229, 210, 0.15)" : "transparent",
         borderLeft: active ? "3px solid #D8E5D2" : "3px solid transparent",

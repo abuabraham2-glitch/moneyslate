@@ -24,10 +24,10 @@ export function StatCard({
     <Card className="border-border/60 shadow-card">
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+          <p className="font-medium text-muted-foreground" style={{ fontSize: 12 }}>{label}</p>
           {icon && <div className="text-muted-foreground/70">{icon}</div>}
         </div>
-        <p className={cn("text-2xl font-semibold mt-2 tracking-tight", toneClass)}>{value}</p>
+        <p className={cn("font-semibold mt-2 tracking-tight", toneClass)} style={{ fontSize: 28 }}>{value}</p>
         {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
       </CardContent>
     </Card>

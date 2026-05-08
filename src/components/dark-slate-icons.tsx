@@ -45,35 +45,42 @@ export function VendorsIcon({ size = 18, ...rest }: IconProps) {
   );
 }
 
-/** Invoices — document with outgoing arrow (kept conventional). */
+/** Invoices — document with lines and outgoing arrow. */
 export function InvoicesIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <path d="M7 3h7l4 4v14H7z" />
-      <path d="M14 3v4h4" />
-      <line x1="9.5" y1="13" x2="15.5" y2="13" />
-      <line x1="9.5" y1="17" x2="13.5" y2="17" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <path d="M 4 3 L 4 17 Q 4 18 5 18 L 14 18 Q 15 18 15 17 L 15 6 L 12 3 Z" fill="none" />
+      <line x1="6" y1="7" x2="13" y2="7" strokeWidth={1} />
+      <line x1="6" y1="10" x2="13" y2="10" strokeWidth={1} />
+      <line x1="6" y1="13" x2="11" y2="13" strokeWidth={1} />
+      <path d="M 14 15 L 17 15 M 17 15 L 16 14 M 17 15 L 16 16" fill="none" />
     </svg>
   );
 }
 
-/** Purchase Orders — reversed invoice: arrow pointing INTO a document frame. */
+/** Purchase Orders — document with PO label, lines, and check circle. */
 export function PurchaseOrdersIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <path d="M9 4h11v16H9" />
-      <line x1="3" y1="12" x2="14" y2="12" />
-      <polyline points="11 8 15 12 11 16" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <path d="M 4 3 L 4 15 Q 4 16 5 16 L 12 16 Q 13 16 13 15 L 13 6 L 10 3 Z" fill="none" />
+      <text x="5" y="7" fontSize="3" fontWeight="bold" fill="currentColor" stroke="none">PO</text>
+      <line x1="6" y1="9" x2="12" y2="9" strokeWidth={0.8} />
+      <line x1="6" y1="11" x2="12" y2="11" strokeWidth={0.8} />
+      <circle cx="15" cy="13" r="2.5" fill="none" />
+      <path d="M 14.2 13 L 15 13.8 L 15.8 12.2" strokeWidth={1.2} fill="none" />
     </svg>
   );
 }
 
-/** Bills — ticket with single notched edge. */
+/** Bills — document with lines and arrow. */
 export function BillsIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <path d="M4 6h16v5a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V6z" />
-      <line x1="13" y1="9" x2="13" y2="15" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <path d="M 4 3 L 4 17 Q 4 18 5 18 L 14 18 Q 15 18 15 17 L 15 6 L 12 3 Z" fill="none" />
+      <line x1="6" y1="7" x2="13" y2="7" strokeWidth={1} />
+      <line x1="6" y1="10" x2="13" y2="10" strokeWidth={1} />
+      <line x1="6" y1="13" x2="11" y2="13" strokeWidth={1} />
+      <path d="M 14 15 L 17 15 M 17 15 L 16 14 M 17 15 L 16 16" fill="none" />
     </svg>
   );
 }
@@ -89,35 +96,41 @@ export function ExpensesIcon({ size = 18, ...rest }: IconProps) {
   );
 }
 
-/** Reconciliation — two parallel lines linked by a vertical (Equalizer). */
+/** Reconciliation — balance scale. */
 export function ReconciliationIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <line x1="3" y1="8" x2="21" y2="8" />
-      <line x1="3" y1="16" x2="21" y2="16" />
-      <line x1="12" y1="8" x2="12" y2="16" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <line x1="10" y1="5" x2="10" y2="9" />
+      <path d="M 6 9 L 4 11 L 4 14 Q 4 14.5 4.5 14.5 L 7.5 14.5 Q 8 14.5 8 14 L 8 11 Z" fill="none" />
+      <path d="M 14 9 L 16 11 L 16 14 Q 16 14.5 15.5 14.5 L 12.5 14.5 Q 12 14.5 12 14 L 12 11 Z" fill="none" />
+      <line x1="4" y1="9" x2="16" y2="9" />
     </svg>
   );
 }
 
-/** Reports — three vertical bars, varying heights, bottom-aligned. */
+/** Reports — upward trend arrow with bar chart. */
 export function ReportsIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <line x1="6" y1="20" x2="6" y2="14" />
-      <line x1="12" y1="20" x2="12" y2="9" />
-      <line x1="18" y1="20" x2="18" y2="5" />
-      <line x1="3" y1="20" x2="21" y2="20" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <path d="M 4 14 L 8 10 L 11 12 L 16 6" fill="none" />
+      <path d="M 14 6 L 16 6 L 16 8" fill="none" />
+      <rect x="5" y="15" width="2" height="3" strokeWidth={1.2} fill="none" />
+      <rect x="9" y="13" width="2" height="5" strokeWidth={1.2} fill="none" />
+      <rect x="13" y="14" width="2" height="4" strokeWidth={1.2} fill="none" />
     </svg>
   );
 }
 
-/** Settings — minimal gear (kept simple). */
+/** Settings — gear with double outline. */
 export function SettingsIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <circle cx="10" cy="10" r="3" fill="none" />
+      <circle cx="10" cy="10" r="5.5" fill="none" />
+      <circle cx="10" cy="3" r="1" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="10" r="1" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="17" r="1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="10" r="1" fill="currentColor" stroke="none" />
     </svg>
   );
 }

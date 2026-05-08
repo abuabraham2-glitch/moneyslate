@@ -146,14 +146,14 @@ function Dashboard() {
       <div style={{ maxWidth: 880, margin: "0 auto", fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif" }}>
         {/* Company name */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 600, color: "#D8E5D2", margin: 0, letterSpacing: "0.02em" }}>
+          <h1 style={{ fontSize: 32, fontWeight: 600, color: "#D8E5D2", margin: 0, letterSpacing: "0.02em" }}>
             Bottles & Print
           </h1>
         </div>
 
         {/* Greeting */}
         <div style={{ marginBottom: 16 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 500, color: "#D8E5D2", margin: 0 }}>
+          <h2 style={{ fontSize: 24, fontWeight: 500, color: "#D8E5D2", margin: 0 }}>
             {greeting}, {firstName}
           </h2>
           <div style={{ fontSize: 12, color: "#A39E96", letterSpacing: "0.5px", marginTop: 4 }}>{dateLine}</div>
@@ -173,7 +173,7 @@ function Dashboard() {
           >
             <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 24 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-                <span style={{ fontSize: 14, fontWeight: 500, color: "#232929" }}>
+                <span style={{ fontSize: 20, fontWeight: 500, color: "#232929" }}>
                   {items.length} thing{items.length === 1 ? "" : "s"} need{items.length === 1 ? "s" : ""} your attention today
                 </span>
                 <span style={{ fontSize: 12, color: "#4A5A5A" }}>~{items.length * 3 + 1} min</span>
@@ -186,7 +186,7 @@ function Dashboard() {
 
         {/* KPI strip */}
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 11, color: "#A39E96", marginBottom: 8, letterSpacing: "0.5px" }}>This month at a glance</div>
+          <div style={{ fontSize: 12, color: "#A39E96", marginBottom: 8, letterSpacing: "0.5px" }}>This month at a glance</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
             <KpiCard label="Revenue" value={fmtMoney(kpis?.revenue ?? 0)} />
             <KpiCard label="Expenses" value={fmtMoney(kpis?.expenses ?? 0)} />
@@ -197,7 +197,7 @@ function Dashboard() {
 
         {/* Footer */}
         <div style={{ textAlign: "center", paddingTop: 16 }}>
-          <Link to="/reports" style={{ fontSize: 13, color: "#A39E96", textDecoration: "none" }}>
+          <Link to="/reports" style={{ fontSize: 14, color: "#A39E96", textDecoration: "none" }}>
             See charts and reports →
           </Link>
         </div>
@@ -239,7 +239,7 @@ function ActionItem({
       <button
         onClick={button.onClick}
         style={{
-          fontSize: 13,
+          fontSize: 14,
           padding: "6px 14px",
           borderRadius: 8,
           fontWeight: 500,
@@ -259,8 +259,8 @@ function ActionItem({
 function KpiCard({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ background: "#2D3838", borderRadius: 8, padding: "12px 14px" }}>
-      <div style={{ fontSize: 11, color: "#A39E96" }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 500, color: "#D8E5D2", marginTop: 2 }}>{value}</div>
+      <div style={{ fontSize: 12, color: "#A39E96" }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 500, color: "#D8E5D2", marginTop: 2 }}>{value}</div>
     </div>
   );
 }
@@ -285,7 +285,7 @@ function RevenueTrendCard({ amount }: { amount: number }) {
         <span style={{ fontSize: 14, fontWeight: 500, color: "#D8E5D2" }}>Revenue Trend</span>
         <span style={{ fontSize: 11, color: "#A39E96", letterSpacing: "0.5px" }}>THIS MONTH</span>
       </div>
-      <div style={{ fontSize: 28, fontWeight: 500, color: "#D8E5D2", marginBottom: 10 }}>{fmtMoney(amount)}</div>
+      <div style={{ fontSize: 32, fontWeight: 500, color: "#D8E5D2", marginBottom: 10 }}>{fmtMoney(amount)}</div>
       <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: "100%", height: 100, marginTop: "auto" }}>
         <defs>
           <linearGradient id="waveFill" x1="0" y1="0" x2="0" y2="1">

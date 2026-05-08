@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CleanSweepsLogo } from "@/components/dark-slate-icons";
+import CleanSweepsLogo from "@/components/CleanSweepsLogo";
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
 

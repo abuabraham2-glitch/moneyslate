@@ -239,7 +239,7 @@ export function POdialog({
     <>
       <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
       <DialogContent
-        className="max-w-4xl max-h-[92vh] overflow-y-auto"
+        className="max-w-6xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
         onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
         onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}

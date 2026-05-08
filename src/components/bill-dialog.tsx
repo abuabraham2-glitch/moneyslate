@@ -155,7 +155,7 @@ export function BillDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) tryClose(); else onOpenChange(true); }}>
       <DialogContent
-        className="max-w-3xl max-h-[92vh] overflow-y-auto"
+        className="max-w-6xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
         onOpenAutoFocus={(e) => {
           if (fromPrefillRef.current) {

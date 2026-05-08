@@ -63,9 +63,9 @@ function AppLayout() {
           className="px-5 py-4 flex items-center justify-between"
           style={{ borderBottom: "1px solid rgba(212, 229, 210, 0.1)" }}
         >
-          <Link to="/dashboard" className="flex items-center gap-2" style={{ color: "#D8E5D2", fontWeight: 500 }}>
-            <CleanSweepsLogo width={36} height={36} />
-            <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
+          <Link to="/dashboard" className="flex items-center" style={{ color: "#D8E5D2", fontWeight: 500 }}>
+            <CleanSweepsLogo width={72} height={72} />
+            <span style={{ letterSpacing: "0.05em", marginLeft: 16 }}>Dark Slate</span>
           </Link>
           <button className="lg:hidden" style={{ color: "#A39E96" }} onClick={() => setOpen(false)}>
             <X className="h-5 w-5" />

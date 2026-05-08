@@ -4,10 +4,14 @@ import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Sun, Moon, Monitor, Menu, X } from "lucide-react";
 import {
-  DashboardIcon, ClientsIcon, VendorsIcon, InvoicesIcon, PurchaseOrdersIcon,
+  ClientsIcon, VendorsIcon, InvoicesIcon, PurchaseOrdersIcon,
   BillsIcon, ExpensesIcon, ReconciliationIcon, ReportsIcon, SettingsIcon,
 } from "@/components/dark-slate-icons";
 import CleanSweepsLogo from "@/components/CleanSweepsLogo";
+
+const DashboardNavIcon = ({ size = 18 }: { size?: number }) => (
+  <CleanSweepsLogo width={size} height={size} color="#D8E5D2" />
+);
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

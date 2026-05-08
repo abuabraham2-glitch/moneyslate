@@ -2,10 +2,11 @@ import { createFileRoute, Outlet, redirect, Link, useRouterState, useNavigate } 
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
+import { LogOut, Sun, Moon, Monitor, Menu, X } from "lucide-react";
 import {
-  LayoutDashboard, User, Building2, FileText, FileCheck, FileSpreadsheet,
-  Scale, CheckCircle2, TrendingUp, Settings, LogOut, Sun, Moon, Monitor, Menu, X, Wallet,
-} from "lucide-react";
+  DashboardIcon, ClientsIcon, VendorsIcon, InvoicesIcon, PurchaseOrdersIcon,
+  BillsIcon, ExpensesIcon, ReconciliationIcon, ReportsIcon, SettingsIcon, CleanSweepsLogo,
+} from "@/components/dark-slate-icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,16 +19,16 @@ export const Route = createFileRoute("/_app")({
 });
 
 const nav = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/clients", label: "Clients", icon: User },
-  { to: "/vendors", label: "Vendors", icon: Building2 },
-  { to: "/invoices", label: "Invoices", icon: FileText },
-  { to: "/purchase-orders", label: "Purchase Orders", icon: FileCheck },
-  { to: "/bills", label: "Bills", icon: FileSpreadsheet },
-  { to: "/expenses", label: "Expenses", icon: Scale },
-  { to: "/reconciliation", label: "Reconciliation", icon: CheckCircle2 },
-  { to: "/reports", label: "Reports", icon: TrendingUp },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { to: "/clients", label: "Clients", icon: ClientsIcon },
+  { to: "/vendors", label: "Vendors", icon: VendorsIcon },
+  { to: "/invoices", label: "Invoices", icon: InvoicesIcon },
+  { to: "/purchase-orders", label: "Purchase Orders", icon: PurchaseOrdersIcon },
+  { to: "/bills", label: "Bills", icon: BillsIcon },
+  { to: "/expenses", label: "Expenses", icon: ExpensesIcon },
+  { to: "/reconciliation", label: "Reconciliation", icon: ReconciliationIcon },
+  { to: "/reports", label: "Reports", icon: ReportsIcon },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
 ] as const;
 
 function AppLayout() {
@@ -62,7 +63,7 @@ function AppLayout() {
               className="h-8 w-8 rounded-lg grid place-items-center"
               style={{ background: "#D8E5D2", color: "#232929" }}
             >
-              <Wallet className="h-4 w-4" />
+              <CleanSweepsLogo size={18} />
             </div>
             <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
           </Link>

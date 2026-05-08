@@ -83,6 +83,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    registerPwa();
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>

@@ -13,16 +13,13 @@ const base = (size: number): React.SVGProps<SVGSVGElement> => ({
   strokeLinejoin: "round",
 });
 
-/** Dashboard — 2x2 grid of offset bars (mini logo). */
+/** Dashboard — 3 offset rounded bars (mini Clean Sweeps). */
 export function DashboardIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <line x1="3" y1="7" x2="10" y2="7" />
-      <line x1="13" y1="7" x2="20" y2="7" />
-      <line x1="5" y1="13" x2="11" y2="13" />
-      <line x1="14" y1="13" x2="21" y2="13" />
-      <line x1="3" y1="19" x2="9" y2="19" />
-      <line x1="12" y1="19" x2="19" y2="19" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <rect x="8" y="3" width="8" height="2.5" rx="1.25" />
+      <rect x="5" y="7" width="8" height="2.5" rx="1.25" />
+      <rect x="7" y="11" width="8" height="2.5" rx="1.25" />
     </svg>
   );
 }
@@ -30,21 +27,21 @@ export function DashboardIcon({ size = 18, ...rest }: IconProps) {
 /** Clients — detached circle (head) + arc (shoulders). */
 export function ClientsIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <circle cx="12" cy="8" r="3.2" />
-      <path d="M5 20c1.4-3.6 4-5.4 7-5.4s5.6 1.8 7 5.4" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <circle cx="10" cy="6" r="2.5" />
+      <path d="M 6 13 Q 10 10 14 13" />
     </svg>
   );
 }
 
-/** Vendors — stylized box/warehouse using three parallel lines for depth. */
+/** Vendors — box with perspective lines (warehouse). */
 export function VendorsIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...base(size)} {...rest}>
-      <path d="M4 8l8-4 8 4v10l-8 4-8-4V8z" />
-      <line x1="4" y1="8" x2="12" y2="12" />
-      <line x1="20" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="12" x2="12" y2="22" />
+    <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
+      <rect x="3" y="6" width="14" height="10" rx="1" />
+      <line x1="3" y1="9" x2="17" y2="9" />
+      <line x1="5" y1="6" x2="3" y2="9" />
+      <line x1="15" y1="6" x2="17" y2="9" />
     </svg>
   );
 }

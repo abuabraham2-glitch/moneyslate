@@ -126,13 +126,17 @@ export function SettingsIcon({ size = 18, ...rest }: IconProps) {
   );
 }
 
-/** Logo — three offset horizontal bars (The Clean Sweeps). */
-export function CleanSweepsLogo({ size = 20, ...rest }: IconProps) {
+/** Logo — "The Clean Sweeps" mark. */
+import cleanSweepsLogo from "@/assets/clean-sweeps-logo-transparent.png";
+export function CleanSweepsLogo({ size = 20, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
   return (
-    <svg {...base(size)} {...rest} strokeWidth={2.5}>
-      <line x1="3" y1="7" x2="14" y2="7" />
-      <line x1="8" y1="12" x2="21" y2="12" />
-      <line x1="5" y1="17" x2="17" y2="17" />
-    </svg>
+    <img
+      src={cleanSweepsLogo}
+      alt="Dark Slate"
+      width={size}
+      height={size}
+      className={className}
+      style={{ objectFit: "contain", ...style }}
+    />
   );
 }

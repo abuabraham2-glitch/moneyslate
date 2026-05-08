@@ -4,10 +4,14 @@ import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Sun, Moon, Monitor, Menu, X } from "lucide-react";
 import {
-  DashboardIcon, ClientsIcon, VendorsIcon, InvoicesIcon, PurchaseOrdersIcon,
+  ClientsIcon, VendorsIcon, InvoicesIcon, PurchaseOrdersIcon,
   BillsIcon, ExpensesIcon, ReconciliationIcon, ReportsIcon, SettingsIcon,
 } from "@/components/dark-slate-icons";
 import CleanSweepsLogo from "@/components/CleanSweepsLogo";
+
+const DashboardNavIcon = ({ size = 20 }: { size?: number }) => (
+  <CleanSweepsLogo width={20} height={20} color="#D8E5D2" />
+);
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,7 +24,7 @@ export const Route = createFileRoute("/_app")({
 });
 
 const nav = [
-  { to: "/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { to: "/dashboard", label: "Dashboard", icon: DashboardNavIcon },
   { to: "/clients", label: "Clients", icon: ClientsIcon },
   { to: "/vendors", label: "Vendors", icon: VendorsIcon },
   { to: "/invoices", label: "Invoices", icon: InvoicesIcon },
@@ -59,9 +63,9 @@ function AppLayout() {
           className="px-5 py-4 flex items-center justify-between"
           style={{ borderBottom: "1px solid rgba(212, 229, 210, 0.1)" }}
         >
-          <Link to="/dashboard" className="flex items-center gap-2" style={{ color: "#D8E5D2", fontWeight: 500 }}>
-            <CleanSweepsLogo width={36} height={36} />
-            <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
+          <Link to="/dashboard" className="flex items-center" style={{ color: "#D8E5D2", fontWeight: 500 }}>
+            <CleanSweepsLogo width={72} height={72} />
+            <span style={{ letterSpacing: "0.05em", marginLeft: 16 }}>Dark Slate</span>
           </Link>
           <button className="lg:hidden" style={{ color: "#A39E96" }} onClick={() => setOpen(false)}>
             <X className="h-5 w-5" />

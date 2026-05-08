@@ -49,8 +49,8 @@ function LoginPage() {
     <div className="min-h-screen w-full grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary/95 to-primary p-12 text-primary-foreground">
         <div className="flex flex-col items-center text-lg font-semibold">
-          <CleanSweepsLogo width={64} height={64} />
-          <span style={{ letterSpacing: "0.05em", marginTop: 24 }}>Dark Slate</span>
+          <CleanSweepsLogo width={240} height={240} color="#C8D7C0" />
+          <span style={{ letterSpacing: "0.05em", marginTop: 32 }}>Dark Slate</span>
         </div>
         <div>
           <h1 className="text-4xl font-semibold tracking-tight leading-tight">
@@ -66,8 +66,8 @@ function LoginPage() {
       <div className="flex items-center justify-center p-6 sm:p-12">
         <form onSubmit={submit} className="w-full max-w-sm space-y-6">
           <div className="lg:hidden flex flex-col items-center font-semibold">
-            <CleanSweepsLogo width={64} height={64} />
-            <span style={{ letterSpacing: "0.05em", marginTop: 24 }}>Dark Slate</span>
+            <CleanSweepsLogo width={240} height={240} color="#C8D7C0" />
+            <span style={{ letterSpacing: "0.05em", marginTop: 32 }}>Dark Slate</span>
           </div>
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">

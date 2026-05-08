@@ -65,7 +65,7 @@ function LoginPage() {
       <div className="flex items-center justify-center p-6 sm:p-12">
         <form onSubmit={submit} className="w-full max-w-sm space-y-6">
           <div className="lg:hidden flex items-center gap-2 font-semibold">
-            <CleanSweepsLogo size={20} className="text-primary" /> <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
+            <CleanSweepsLogo width={40} height={40} color="#D8E5D2" className="text-primary" /> <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
           </div>
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">

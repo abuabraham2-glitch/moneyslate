@@ -33,6 +33,10 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Money Slate" },
       { name: "description", content: "Money Slate — a calm, premium finance sanctuary for sole proprietors." },
+      { name: "theme-color", content: "#232929" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Money Slate" },
       {
         name: "google-fonts",
         content: "Inter",

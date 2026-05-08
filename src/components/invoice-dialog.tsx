@@ -44,7 +44,11 @@ export function InvoiceDialog({
   const today = new Date().toISOString().slice(0, 10);
 
   const [form, setForm] = useState<InvoiceForm>({
-    client_id: null, issue_date: today, due_date: today, tax_amount: 0,
+    client_id: null,
+    issue_date: today,
+    due_date: today,
+    payment_terms: "Due Upon Receipt",
+    tax_amount: 0,
   });
   const [lines, setLines] = useState<LineItem[]>([]);
   const [baseline, setBaseline] = useState("");
@@ -80,7 +84,13 @@ export function InvoiceDialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
-        const f: InvoiceForm = { client_id: null, issue_date: today, due_date: today, tax_amount: 0, payment_terms: settings?.default_payment_terms || "Due Upon Receipt" };
+        const f: InvoiceForm = {
+          client_id: null,
+          issue_date: today,
+          due_date: today,
+          payment_terms: "Due Upon Receipt",
+          tax_amount: 0,
+        };
         setForm(f);
         const initialLines = normalizeLineItemsForEditor([], "unit_price");
         setLines(initialLines);
@@ -100,7 +110,7 @@ export function InvoiceDialog({
       const next = { ...p, [k]: v };
       if (k === "client_id") {
         const c = clients.find((c: any) => c.id === v);
-        if (c?.payment_terms) {
+        if (p.id && c?.payment_terms) {
           next.payment_terms = c.payment_terms;
           next.due_date = addDaysFromTerms(next.issue_date, c.payment_terms);
         }
@@ -108,7 +118,7 @@ export function InvoiceDialog({
       if (k === "issue_date") {
         next.due_date = v as string;
       }
-      if (k === "payment_terms") {
+      if (k === "payment_terms" && p.id) {
         next.due_date = addDaysFromTerms(next.issue_date, v as string);
       }
       return next;

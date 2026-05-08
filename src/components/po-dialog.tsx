@@ -298,12 +298,12 @@ export function POdialog({
             </div>
           </div>
 
-          <div className="space-y-1.5"><Label className="text-xs">Vendor Notes</Label>
-            <Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} />
-          </div>
-
           <div className="space-y-1.5"><Label className="text-xs">Memo (internal — not shown on PDF)</Label>
             <Textarea rows={2} value={form.memo || ""} onChange={(e) => set("memo", e.target.value)} />
+          </div>
+
+          <div className="space-y-1.5"><Label className="text-xs">Vendor Notes</Label>
+            <Textarea rows={2} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} />
           </div>
         </div>
 

@@ -1,5 +1,12 @@
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+function formatWithCommas(n: number, places: number): string {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: places,
+    maximumFractionDigits: places,
+  }).format(n);
+}
 
 /** Numeric input that accepts intermediate states like "0." while typing. */
 export function NumberInput({
@@ -14,13 +21,35 @@ export function NumberInput({
   minDecimals?: number;
   maxDecimals?: number;
 }) {
-  const [text, setText] = useState<string>(value == null ? "" : String(value));
+  const focusedRef = useRef(false);
+
+  const formatDisplay = (v: number | null | undefined): string => {
+    if (v == null) return "";
+    const n = Number(v);
+    if (Number.isNaN(n)) return "";
+    const str = Math.abs(n).toString();
+    const dot = str.indexOf(".");
+    const typedDecimals = dot === -1 ? 0 : str.length - dot - 1;
+    let places: number;
+    if (typeof minDecimals === "number" || typeof maxDecimals === "number") {
+      const lo = minDecimals ?? 0;
+      const hi = maxDecimals ?? Math.max(typedDecimals, lo);
+      places = Math.min(Math.max(typedDecimals, lo), hi);
+    } else if (typeof decimals === "number") {
+      places = decimals;
+    } else {
+      places = typedDecimals;
+    }
+    return formatWithCommas(n, places);
+  };
+
+  const [text, setText] = useState<string>(() => formatDisplay(value));
 
   useEffect(() => {
-    // Sync from outside only when the parsed value differs from current text
-    const parsed = parseFloat(text);
+    if (focusedRef.current) return;
+    const parsed = parseFloat(text.replace(/,/g, ""));
     if (Number.isNaN(parsed) ? value != null : parsed !== Number(value ?? 0)) {
-      setText(value == null ? "" : String(value));
+      setText(formatDisplay(value));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
@@ -33,9 +62,13 @@ export function NumberInput({
       placeholder={placeholder}
       className={className}
       onKeyDown={onKeyDown}
+      onFocus={() => {
+        focusedRef.current = true;
+        // Strip commas while editing
+        setText((t) => t.replace(/,/g, ""));
+      }}
       onChange={(e) => {
-        const raw = e.target.value;
-        // Allow empty, digits, optional single dot, optional leading minus
+        const raw = e.target.value.replace(/,/g, "");
         if (raw === "" || /^-?\d*\.?\d*$/.test(raw)) {
           setText(raw);
           const n = raw === "" || raw === "-" || raw === "." || raw === "-." ? 0 : parseFloat(raw);
@@ -43,23 +76,15 @@ export function NumberInput({
         }
       }}
       onBlur={() => {
+        focusedRef.current = false;
         if (text === "" || text === "-" || text === "." || text === "-.") {
           setText("0");
+          onChange(0);
           return;
         }
-        const n = parseFloat(text);
+        const n = parseFloat(text.replace(/,/g, ""));
         if (!Number.isNaN(n)) {
-          if (typeof minDecimals === "number" || typeof maxDecimals === "number") {
-            // Determine current decimal count from typed text
-            const dotIdx = text.indexOf(".");
-            const typedDecimals = dotIdx === -1 ? 0 : text.length - dotIdx - 1;
-            const lo = minDecimals ?? 0;
-            const hi = maxDecimals ?? Math.max(typedDecimals, lo);
-            const places = Math.min(Math.max(typedDecimals, lo), hi);
-            setText(n.toFixed(places));
-          } else if (typeof decimals === "number") {
-            setText(n.toFixed(decimals));
-          }
+          setText(formatDisplay(n));
         }
       }}
     />

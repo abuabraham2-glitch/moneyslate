@@ -49,7 +49,7 @@ function LoginPage() {
     <div className="min-h-screen w-full grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary/95 to-primary p-12 text-primary-foreground">
         <div className="flex items-center gap-2 text-lg font-semibold">
-          <CleanSweepsLogo size={24} /> <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
+          <CleanSweepsLogo width={40} height={40} color="#D8E5D2" /> <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
         </div>
         <div>
           <h1 className="text-4xl font-semibold tracking-tight leading-tight">

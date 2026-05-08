@@ -49,7 +49,7 @@ function LoginPage() {
     <div className="min-h-screen w-full grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary/95 to-primary p-12 text-primary-foreground">
         <div className="flex items-center gap-2 text-lg font-semibold">
-          <Wallet className="h-6 w-6" /> Finance OS
+          <Wallet className="h-6 w-6" /> <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
         </div>
         <div>
           <h1 className="text-4xl font-semibold tracking-tight leading-tight">
@@ -59,13 +59,13 @@ function LoginPage() {
             Invoices, POs, bills, expenses, and AI-assisted bank reconciliation — all in one focused workspace.
           </p>
         </div>
-        <div className="text-sm text-primary-foreground/70">© {new Date().getFullYear()} Finance OS</div>
+        <div className="text-sm text-primary-foreground/70">© {new Date().getFullYear()} Dark Slate</div>
       </div>
 
       <div className="flex items-center justify-center p-6 sm:p-12">
         <form onSubmit={submit} className="w-full max-w-sm space-y-6">
           <div className="lg:hidden flex items-center gap-2 font-semibold">
-            <Wallet className="h-5 w-5 text-primary" /> Finance OS
+            <Wallet className="h-5 w-5 text-primary" /> <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
           </div>
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">

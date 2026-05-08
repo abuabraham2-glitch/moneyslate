@@ -64,7 +64,7 @@ function AppLayout() {
             >
               <Wallet className="h-4 w-4" />
             </div>
-            Finance Flow
+            <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
           </Link>
           <button className="lg:hidden" style={{ color: "#A39E96" }} onClick={() => setOpen(false)}>
             <X className="h-5 w-5" />
@@ -87,7 +87,7 @@ function AppLayout() {
           style={{ background: "rgba(35,41,41,0.8)", borderBottom: "1px solid rgba(212, 229, 210, 0.1)", color: "#D8E5D2" }}
         >
           <button onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
-          <span className="font-semibold">Finance Flow</span>
+          <span className="font-semibold" style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
         </header>
         <main className="flex-1 min-w-0">
           <Outlet />
@@ -107,7 +107,7 @@ function NavLink({ to, label, icon: Icon, onClick }: { to: string; label: string
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="flex items-center rounded-md text-sm font-medium transition-colors"
+      className="flex items-center rounded-md text-sm font-medium"
       style={{
         gap: 10,
         color: active || hover ? "#D8E5D2" : "#A39E96",
@@ -117,6 +117,7 @@ function NavLink({ to, label, icon: Icon, onClick }: { to: string; label: string
         paddingRight: 12,
         paddingTop: 8,
         paddingBottom: 8,
+        transition: "color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease",
       }}
     >
       <Icon size={18} />

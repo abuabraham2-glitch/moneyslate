@@ -9,7 +9,7 @@ export default function CleanSweepsLogo({
   color?: string;
   accentColor?: string;
 }) {
-  const accent = accentColor ?? "#C8D7C0";
+  const accent = accentColor ?? color;
   return (
     <svg
       width={width}

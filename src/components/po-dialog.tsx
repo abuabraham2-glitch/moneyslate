@@ -106,7 +106,7 @@ export function POdialog({
         // Default Bill To from company settings. Internal PO # auto-syncs to PO # on save.
         const parsed = parseCompanyAddress(settings?.company_address || "");
         const f: POForm = {
-          vendor_id: null, issue_date: today,
+          vendor_id: null, issue_date: today, expected_delivery_date: addDays(today, 21),
           internal_po_number: "",
           ship_to_name: settings?.company_name || "",
           ship_to_street: parsed.street,

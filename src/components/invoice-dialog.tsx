@@ -80,7 +80,7 @@ export function InvoiceDialog({
           setBaseline(JSON.stringify({ f, li: normalizedLines }));
         }
       } else {
-        const f: InvoiceForm = { client_id: null, issue_date: today, due_date: today, tax_amount: 0, payment_terms: settings?.default_payment_terms || "Net 30" };
+        const f: InvoiceForm = { client_id: null, issue_date: today, due_date: today, tax_amount: 0, payment_terms: settings?.default_payment_terms || "Due Upon Receipt" };
         setForm(f);
         const initialLines = normalizeLineItemsForEditor([], "unit_price");
         setLines(initialLines);

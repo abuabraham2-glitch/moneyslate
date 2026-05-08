@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Sun, Moon, Monitor, Menu, X } from "lucide-react";
 import {
   DashboardIcon, ClientsIcon, VendorsIcon, InvoicesIcon, PurchaseOrdersIcon,
-  BillsIcon, ExpensesIcon, ReconciliationIcon, ReportsIcon, SettingsIcon, CleanSweepsLogo,
+  BillsIcon, ExpensesIcon, ReconciliationIcon, ReportsIcon, SettingsIcon,
 } from "@/components/dark-slate-icons";
+import CleanSweepsLogo from "@/components/CleanSweepsLogo";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

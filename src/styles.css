@@ -142,3 +142,21 @@
   }
   table, .tabular-nums { font-variant-numeric: tabular-nums; }
 }
+
+@layer base {
+  /* Brighten native date/time picker calendar icon */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator,
+  input[type="week"]::-webkit-calendar-picker-indicator {
+    filter: invert(70%) sepia(8%) saturate(280%) hue-rotate(5deg) brightness(95%);
+    opacity: 0.9;
+    cursor: pointer;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+  input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+}

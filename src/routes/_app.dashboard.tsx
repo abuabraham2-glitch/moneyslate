@@ -144,12 +144,19 @@ function Dashboard() {
   return (
     <div style={{ background: "#232929", minHeight: "100%", padding: "32px 24px" }}>
       <div style={{ maxWidth: 880, margin: "0 auto", fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif" }}>
+        {/* Company name */}
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 600, color: "#D8E5D2", margin: 0, letterSpacing: "0.02em" }}>
+            Bottles & Print
+          </h1>
+        </div>
+
         {/* Greeting */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, color: "#A39E96", letterSpacing: "0.5px" }}>{dateLine}</div>
-          <h1 style={{ fontSize: 22, fontWeight: 500, color: "#D8E5D2", margin: "4px 0 0" }}>
+          <h2 style={{ fontSize: 22, fontWeight: 500, color: "#D8E5D2", margin: 0 }}>
             {greeting}, {firstName}
-          </h1>
+          </h2>
+          <div style={{ fontSize: 12, color: "#A39E96", letterSpacing: "0.5px", marginTop: 4 }}>{dateLine}</div>
         </div>
 
         {/* Two-column: action card + revenue trend */}

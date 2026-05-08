@@ -132,7 +132,7 @@ export function CleanSweepsLogo({ size = 20, className, style }: { size?: number
   return (
     <img
       src={cleanSweepsLogo}
-      alt="Dark Slate"
+      alt="Money Slate"
       width={size}
       height={size}
       className={className}

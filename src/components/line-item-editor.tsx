@@ -41,9 +41,9 @@ export function LineItemEditor({
           <tr>
             <th className="text-left px-3 py-2 text-xs uppercase w-48">Product / Service</th>
             <th className="text-left px-3 py-2 text-xs uppercase">Description</th>
-            <th className="text-right px-3 py-2 text-xs uppercase w-20">Qty</th>
-            <th className="text-right px-3 py-2 text-xs uppercase w-28">{priceLabel}</th>
-            <th className="text-right px-3 py-2 text-xs uppercase w-28">Total</th>
+            <th className="text-right px-3 py-2 text-xs uppercase w-32">Qty</th>
+            <th className="text-right px-3 py-2 text-xs uppercase w-40">{priceLabel}</th>
+            <th className="text-right px-3 py-2 text-xs uppercase w-40">Total</th>
             <th className="w-10"></th>
           </tr>
         </thead>

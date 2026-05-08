@@ -105,8 +105,8 @@ export function InvoiceDialog({
           next.due_date = addDaysFromTerms(next.issue_date, c.payment_terms);
         }
       }
-      if (k === "issue_date" && next.payment_terms) {
-        next.due_date = addDaysFromTerms(v as string, next.payment_terms);
+      if (k === "issue_date") {
+        next.due_date = v as string;
       }
       if (k === "payment_terms") {
         next.due_date = addDaysFromTerms(next.issue_date, v as string);

@@ -60,8 +60,13 @@ export function POdialog({
 }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
+  const addDays = (iso: string, days: number) => {
+    const d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
 
-  const [form, setForm] = useState<POForm>({ vendor_id: null, issue_date: today });
+  const [form, setForm] = useState<POForm>({ vendor_id: null, issue_date: today, expected_delivery_date: addDays(today, 21) });
   const [lines, setLines] = useState<LineItem[]>([]);
   const [baseline, setBaseline] = useState("");
   const [saving, setSaving] = useState(false);
@@ -101,7 +106,7 @@ export function POdialog({
         // Default Bill To from company settings. Internal PO # auto-syncs to PO # on save.
         const parsed = parseCompanyAddress(settings?.company_address || "");
         const f: POForm = {
-          vendor_id: null, issue_date: today,
+          vendor_id: null, issue_date: today, expected_delivery_date: addDays(today, 21),
           internal_po_number: "",
           ship_to_name: settings?.company_name || "",
           ship_to_street: parsed.street,
@@ -122,7 +127,11 @@ export function POdialog({
 
   const isDirty = JSON.stringify({ f: form, li: lines }) !== baseline;
   const tryClose = () => onOpenChange(false);
-  const set = (k: keyof POForm, v: any) => setForm((p) => ({ ...p, [k]: v }));
+  const set = (k: keyof POForm, v: any) => setForm((p) => {
+    const next = { ...p, [k]: v };
+    if (k === "issue_date" && v) next.expected_delivery_date = addDays(v as string, 21);
+    return next;
+  });
 
   const persist = async (statusOverride?: string): Promise<{ id: string; poNumber: string } | null> => {
     if (!form.vendor_id) { toast.error("Select a vendor"); return null; }

@@ -60,7 +60,7 @@ function AppLayout() {
           style={{ borderBottom: "1px solid rgba(212, 229, 210, 0.1)" }}
         >
           <Link to="/dashboard" className="flex items-center gap-2" style={{ color: "#D8E5D2", fontWeight: 500 }}>
-            <CleanSweepsLogo width={24} height={24} color="#D8E5D2" />
+            <CleanSweepsLogo width={24} height={24} />
             <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
           </Link>
           <button className="lg:hidden" style={{ color: "#A39E96" }} onClick={() => setOpen(false)}>

@@ -1,48 +1,17 @@
-import * as React from "react";
-
-type Props = {
-  width?: number;
-  height?: number;
-  color?: string;
-  className?: string;
-  style?: React.CSSProperties;
-};
-
-/**
- * "The Clean Sweeps" mark.
- * 3 rows of pill-shaped bars:
- *   - Row 1: full-width
- *   - Row 2: two 40% bars (left + right) with a center gap
- *   - Row 3: full-width
- * Bar height 8, vertical gap 8 → viewBox 100x40.
- */
-export default function CleanSweepsLogo({
-  width = 32,
-  height = 32,
-  color = "#D8E5D2",
-  className,
-  style,
-}: Props) {
+export default function CleanSweepsLogo({ width = 32, height = 32 }: { width?: number; height?: number }) {
   return (
     <svg
       width={width}
       height={height}
-      viewBox="0 0 100 40"
-      preserveAspectRatio="xMidYMid meet"
+      viewBox="0 0 512 512"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      style={style}
       aria-hidden="true"
     >
-      {/* Top bar: full width */}
-      <rect x="0" y="0" width="100" height="8" rx="4" fill={color} />
-      {/* Middle left: 40% width, 10% left margin */}
-      <rect x="10" y="16" width="36" height="8" rx="4" fill={color} />
-      {/* Middle right: 40% width, 10% right margin */}
-      <rect x="54" y="16" width="36" height="8" rx="4" fill={color} />
-      {/* Bottom bar: full width */}
-      <rect x="0" y="32" width="100" height="8" rx="4" fill={color} />
+      <rect x="212" y="166" width="168" height="44" rx="22" fill="#D8E5D2" />
+      <rect x="132" y="234" width="168" height="44" rx="22" fill="#D8E5D2" />
+      <rect x="312" y="234" width="68" height="44" rx="22" fill="#C8D7C0" />
+      <rect x="180" y="302" width="200" height="44" rx="22" fill="#D8E5D2" />
     </svg>
   );
 }

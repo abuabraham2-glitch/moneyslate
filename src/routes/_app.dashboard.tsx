@@ -156,7 +156,7 @@ function Dashboard() {
           <h2 style={{ fontSize: 24, fontWeight: 500, color: "#D8E5D2", margin: 0 }}>
             {greeting}, {firstName}
           </h2>
-          <div style={{ fontSize: 12, color: "#A39E96", letterSpacing: "0.5px", marginTop: 4 }}>{dateLine}</div>
+          <div style={{ fontSize: 14, color: "#D8E5D2", letterSpacing: "0.5px", marginTop: 4 }}>{dateLine}</div>
         </div>
 
         {/* Two-column: action card + revenue trend */}
@@ -186,7 +186,7 @@ function Dashboard() {
 
         {/* KPI strip */}
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 12, color: "#A39E96", marginBottom: 8, letterSpacing: "0.5px" }}>This month at a glance</div>
+          <div style={{ fontSize: 12, color: "#D8E5D2", marginBottom: 8, letterSpacing: "0.5px" }}>This month at a glance</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
             <KpiCard label="Revenue" value={fmtMoney(kpis?.revenue ?? 0)} />
             <KpiCard label="Expenses" value={fmtMoney(kpis?.expenses ?? 0)} />
@@ -259,7 +259,7 @@ function ActionItem({
 function KpiCard({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ background: "#2D3838", borderRadius: 8, padding: "12px 14px" }}>
-      <div style={{ fontSize: 12, color: "#A39E96" }}>{label}</div>
+      <div style={{ fontSize: 13, color: "#D8E5D2" }}>{label}</div>
       <div style={{ fontSize: 24, fontWeight: 500, color: "#D8E5D2", marginTop: 2 }}>{value}</div>
     </div>
   );

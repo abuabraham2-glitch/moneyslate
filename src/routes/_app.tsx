@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_app")({
 });
 
 const nav = [
-  { to: "/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { to: "/dashboard", label: "Dashboard", icon: DashboardNavIcon },
   { to: "/clients", label: "Clients", icon: ClientsIcon },
   { to: "/vendors", label: "Vendors", icon: VendorsIcon },
   { to: "/invoices", label: "Invoices", icon: InvoicesIcon },

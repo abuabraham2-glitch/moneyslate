@@ -24,24 +24,23 @@ export function DashboardIcon({ size = 18, ...rest }: IconProps) {
   );
 }
 
-/** Clients — detached circle (head) + arc (shoulders). */
+/** Clients — clean person silhouette (head + shoulders). */
 export function ClientsIcon({ size = 18, ...rest }: IconProps) {
   return (
     <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
-      <circle cx="10" cy="6" r="2.5" />
-      <path d="M 6 13 Q 10 10 14 13" />
+      <circle cx="10" cy="5.5" r="2.8" />
+      <path d="M 7.5 8.5 Q 7 9.5 7 11 L 7 15.5 Q 7 17 10 17 Q 13 17 13 15.5 L 13 11 Q 13 9.5 12.5 8.5" fill="none" />
     </svg>
   );
 }
 
-/** Vendors — box with perspective lines (warehouse). */
+/** Vendors — isometric 3D box. */
 export function VendorsIcon({ size = 18, ...rest }: IconProps) {
   return (
     <svg {...base(size)} viewBox="0 0 20 20" strokeWidth={1.5} {...rest}>
-      <rect x="3" y="6" width="14" height="10" rx="1" />
-      <line x1="3" y1="9" x2="17" y2="9" />
-      <line x1="5" y1="6" x2="3" y2="9" />
-      <line x1="15" y1="6" x2="17" y2="9" />
+      <path d="M 5.5 9 L 10 5.5 L 14.5 9 L 10 12.5 Z" />
+      <path d="M 5.5 9 L 5.5 15 L 10 18.5 L 10 12.5 Z" />
+      <path d="M 10 12.5 L 10 18.5 L 14.5 15 L 14.5 9 Z" />
     </svg>
   );
 }

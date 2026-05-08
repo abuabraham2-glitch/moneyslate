@@ -38,9 +38,9 @@ export default function CleanSweepsLogo({
       {/* Top bar: full width */}
       <rect x="0" y="0" width="100" height="8" rx="4" fill={color} />
       {/* Middle left: 40% width, 10% left margin */}
-      <rect x="10" y="16" width="40" height="8" rx="4" fill={color} />
+      <rect x="10" y="16" width="36" height="8" rx="4" fill={color} />
       {/* Middle right: 40% width, 10% right margin */}
-      <rect x="50" y="16" width="40" height="8" rx="4" fill={color} />
+      <rect x="54" y="16" width="36" height="8" rx="4" fill={color} />
       {/* Bottom bar: full width */}
       <rect x="0" y="32" width="100" height="8" rx="4" fill={color} />
     </svg>

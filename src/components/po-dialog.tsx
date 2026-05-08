@@ -127,7 +127,11 @@ export function POdialog({
 
   const isDirty = JSON.stringify({ f: form, li: lines }) !== baseline;
   const tryClose = () => onOpenChange(false);
-  const set = (k: keyof POForm, v: any) => setForm((p) => ({ ...p, [k]: v }));
+  const set = (k: keyof POForm, v: any) => setForm((p) => {
+    const next = { ...p, [k]: v };
+    if (k === "issue_date" && v) next.expected_delivery_date = addDays(v as string, 21);
+    return next;
+  });
 
   const persist = async (statusOverride?: string): Promise<{ id: string; poNumber: string } | null> => {
     if (!form.vendor_id) { toast.error("Select a vendor"); return null; }

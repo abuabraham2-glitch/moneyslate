@@ -164,7 +164,7 @@ function Dashboard() {
               marginBottom: 18,
             }}
           >
-            <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 20 }}>
+            <div style={{ background: "#D8E5D2", borderRadius: 12, padding: 24 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
                 <span style={{ fontSize: 14, fontWeight: 500, color: "#232929" }}>
                   {items.length} thing{items.length === 1 ? "" : "s"} need{items.length === 1 ? "s" : ""} your attention today
@@ -282,7 +282,7 @@ function RevenueTrendCard({ amount }: { amount: number }) {
       <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: "100%", height: 100, marginTop: "auto" }}>
         <defs>
           <linearGradient id="waveFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#D8E5D2" stopOpacity="0.35" />
+            <stop offset="0%" stopColor="#D8E5D2" stopOpacity="0.10" />
             <stop offset="100%" stopColor="#D8E5D2" stopOpacity="0" />
           </linearGradient>
         </defs>

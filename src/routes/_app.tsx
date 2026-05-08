@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Sun, Moon, Monitor, Menu, X } from "lucide-react";
 import {
   DashboardIcon, ClientsIcon, VendorsIcon, InvoicesIcon, PurchaseOrdersIcon,
-  BillsIcon, ExpensesIcon, ReconciliationIcon, ReportsIcon, SettingsIcon, CleanSweepsLogo,
+  BillsIcon, ExpensesIcon, ReconciliationIcon, ReportsIcon, SettingsIcon,
 } from "@/components/dark-slate-icons";
+import CleanSweepsLogo from "@/components/CleanSweepsLogo";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -59,12 +60,7 @@ function AppLayout() {
           style={{ borderBottom: "1px solid rgba(212, 229, 210, 0.1)" }}
         >
           <Link to="/dashboard" className="flex items-center gap-2" style={{ color: "#D8E5D2", fontWeight: 500 }}>
-            <div
-              className="h-8 w-8 rounded-lg grid place-items-center"
-              style={{ background: "#D8E5D2", color: "#232929" }}
-            >
-              <CleanSweepsLogo size={18} />
-            </div>
+            <CleanSweepsLogo width={24} height={24} color="#D8E5D2" />
             <span style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
           </Link>
           <button className="lg:hidden" style={{ color: "#A39E96" }} onClick={() => setOpen(false)}>

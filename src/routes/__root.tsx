@@ -29,8 +29,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Dark Slate" },
-      { name: "description", content: "Dark Slate — a calm, premium finance sanctuary for sole proprietors." },
+      { title: "Money Slate" },
+      { name: "description", content: "Money Slate — a calm, premium finance sanctuary for sole proprietors." },
       {
         name: "google-fonts",
         content: "Inter",

@@ -65,7 +65,7 @@ function AppLayout() {
         >
           <Link to="/dashboard" className="flex items-center" style={{ color: "#D8E5D2", fontWeight: 500 }}>
             <CleanSweepsLogo width={72} height={72} />
-            <span style={{ letterSpacing: "0.05em", marginLeft: 16 }}>Dark Slate</span>
+            <span style={{ letterSpacing: "0.05em", marginLeft: 16 }}>Money Slate</span>
           </Link>
           <button className="lg:hidden" style={{ color: "#A39E96" }} onClick={() => setOpen(false)}>
             <X className="h-5 w-5" />
@@ -88,7 +88,7 @@ function AppLayout() {
           style={{ background: "rgba(35,41,41,0.8)", borderBottom: "1px solid rgba(212, 229, 210, 0.1)", color: "#D8E5D2" }}
         >
           <button onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
-          <span className="font-semibold" style={{ letterSpacing: "0.05em" }}>Dark Slate</span>
+          <span className="font-semibold" style={{ letterSpacing: "0.05em" }}>Money Slate</span>
         </header>
         <main className="flex-1 min-w-0">
           <Outlet />

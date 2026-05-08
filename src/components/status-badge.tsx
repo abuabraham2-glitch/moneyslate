@@ -7,7 +7,7 @@ type Variant = "draft" | "sent" | "paid" | "overdue" | "unpaid" | "received" | "
 const styles: Record<Variant, string> = {
   draft: "bg-muted text-muted-foreground border border-border",
   sent: "bg-warning/15 text-warning-foreground border border-warning/30 dark:text-warning",
-  paid: "bg-success/15 text-success border border-success/30",
+  paid: "bg-[#22c55e] text-white border border-[#22c55e] shadow-sm font-semibold",
   overdue: "bg-destructive/15 text-destructive border border-destructive/30",
   unpaid: "bg-warning/15 text-warning border border-warning/30",
   received: "bg-primary/15 text-primary border border-primary/30",

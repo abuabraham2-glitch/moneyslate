@@ -9,8 +9,8 @@ import {
 } from "@/components/dark-slate-icons";
 import CleanSweepsLogo from "@/components/CleanSweepsLogo";
 
-const DashboardNavIcon = ({ size = 18 }: { size?: number }) => (
-  <CleanSweepsLogo width={size} height={size} color="#D8E5D2" />
+const DashboardNavIcon = ({ size = 20 }: { size?: number }) => (
+  <CleanSweepsLogo width={20} height={20} color="#D8E5D2" />
 );
 import { useState } from "react";
 import { cn } from "@/lib/utils";

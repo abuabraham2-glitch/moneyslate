@@ -60,8 +60,13 @@ export function POdialog({
 }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
+  const addDays = (iso: string, days: number) => {
+    const d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
 
-  const [form, setForm] = useState<POForm>({ vendor_id: null, issue_date: today });
+  const [form, setForm] = useState<POForm>({ vendor_id: null, issue_date: today, expected_delivery_date: addDays(today, 21) });
   const [lines, setLines] = useState<LineItem[]>([]);
   const [baseline, setBaseline] = useState("");
   const [saving, setSaving] = useState(false);

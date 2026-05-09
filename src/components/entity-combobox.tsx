@@ -72,7 +72,7 @@ export function EntityCombobox({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="py-1">
-          {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">No results.</div>}
+          {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}
           {filtered.map((o, i) => (
             <button
               key={o.id}

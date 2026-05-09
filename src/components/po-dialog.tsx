@@ -252,7 +252,7 @@ export function POdialog({
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label className="text-xs">Vendor *</Label>
-              <EntityCombobox value={form.vendor_id} onChange={(id) => set("vendor_id", id)} options={vendorOptions} placeholder="Search vendor…" />
+              <EntityCombobox value={form.vendor_id} onChange={(id) => set("vendor_id", id)} options={vendorOptions} placeholder="Search vendor…" emptyMessage="No vendors found" />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Internal PO #</Label>
               <Input value={form.internal_po_number || ""} onChange={(e) => set("internal_po_number", e.target.value)} />

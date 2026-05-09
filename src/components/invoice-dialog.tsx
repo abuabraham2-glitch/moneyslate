@@ -255,7 +255,7 @@ export function InvoiceDialog({
               <Input type="date" value={form.due_date} onChange={(e) => set("due_date", e.target.value)} />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Payment terms</Label>
-              <Input value={form.payment_terms || ""} onChange={(e) => set("payment_terms", e.target.value)} placeholder="Net 30" />
+              <TermsCombobox value={form.payment_terms || ""} onChange={(v) => set("payment_terms", v)} />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Tax amount</Label>
               <NumberInput value={form.tax_amount} onChange={(n) => set("tax_amount", n)} />

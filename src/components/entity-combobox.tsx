@@ -6,12 +6,13 @@ import { cn } from "@/lib/utils";
 export type ComboOption = { id: string; label: string; sub?: string };
 
 export function EntityCombobox({
-  value, onChange, options, placeholder = "Search…",
+  value, onChange, options, placeholder = "Search…", emptyMessage = "No results.",
 }: {
   value?: string | null;
   onChange: (id: string | null) => void;
   options: ComboOption[];
   placeholder?: string;
+  emptyMessage?: string;
 }) {
   const selected = options.find((o) => o.id === value) || null;
   const [open, setOpen] = React.useState(false);

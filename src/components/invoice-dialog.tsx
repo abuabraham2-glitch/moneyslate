@@ -243,7 +243,7 @@ export function InvoiceDialog({
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label className="text-xs">Client *</Label>
-              <EntityCombobox value={form.client_id} onChange={(id) => set("client_id", id)} options={clientOptions} placeholder="Search client…" />
+              <EntityCombobox value={form.client_id} onChange={(id) => set("client_id", id)} options={clientOptions} placeholder="Search client…" emptyMessage="No clients found" />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Client PO #</Label>
               <Input value={form.client_po_number || ""} onChange={(e) => set("client_po_number", e.target.value)} />

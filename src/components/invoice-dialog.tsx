@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LineItemEditor, type LineItem } from "@/components/line-item-editor";
 import { EntityCombobox } from "@/components/entity-combobox";
+import { TermsCombobox } from "@/components/terms-combobox";
 import { NumberInput } from "@/components/number-input";
 import { addDaysFromTerms, formatCurrency } from "@/lib/format";
 import { generatePDF } from "@/lib/pdf";

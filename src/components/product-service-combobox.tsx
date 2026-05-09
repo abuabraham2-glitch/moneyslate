@@ -82,13 +82,20 @@ export function ProductServiceCombobox({
           <CommandInput placeholder="Search or add…" value={search} onValueChange={setSearch} />
           <CommandList>
             <CommandEmpty>
-              <button
-                type="button"
-                onClick={createInline}
-                className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded flex items-center gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" /> Create "{search}"
-              </button>
+              {search.trim() ? (
+                <div className="space-y-1">
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">No products found</div>
+                  <button
+                    type="button"
+                    onClick={createInline}
+                    className="w-full text-left px-2 py-1.5 text-sm hover:bg-accent rounded flex items-center gap-1.5"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Create "{search}"
+                  </button>
+                </div>
+              ) : (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">No products found</div>
+              )}
             </CommandEmpty>
             <CommandGroup>
               {items.map((it) => (

@@ -179,10 +179,10 @@ export function BillDialog({
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label className="text-xs">Vendor *</Label>
-              <EntityCombobox value={form.vendor_id} onChange={(id) => { set("vendor_id", id); set("linked_po_id", null); }} options={vendorOptions} placeholder="Search vendor…" />
+              <EntityCombobox value={form.vendor_id} onChange={(id) => { set("vendor_id", id); set("linked_po_id", null); }} options={vendorOptions} placeholder="Search vendor…" emptyMessage="No vendors found" />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Linked PO (optional)</Label>
-              <EntityCombobox value={form.linked_po_id || null} onChange={(id) => set("linked_po_id", id)} options={poOptions} placeholder={form.vendor_id ? "Search received POs…" : "Select vendor first"} />
+              <EntityCombobox value={form.linked_po_id || null} onChange={(id) => set("linked_po_id", id)} options={poOptions} placeholder={form.vendor_id ? "Search received POs…" : "Select vendor first"} emptyMessage="No POs found" />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Vendor Bill Number *</Label>
               <Input value={form.bill_number || ""} onChange={(e) => set("bill_number", e.target.value)} placeholder="Vendor's bill #" />

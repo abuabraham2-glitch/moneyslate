@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LineItemEditor, type LineItem } from "@/components/line-item-editor";
 import { EntityCombobox } from "@/components/entity-combobox";
+import { TermsCombobox } from "@/components/terms-combobox";
 import { NumberInput } from "@/components/number-input";
 import { addDaysFromTerms, formatCurrency } from "@/lib/format";
 import { generatePDF } from "@/lib/pdf";
@@ -243,7 +244,7 @@ export function InvoiceDialog({
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label className="text-xs">Client *</Label>
-              <EntityCombobox value={form.client_id} onChange={(id) => set("client_id", id)} options={clientOptions} placeholder="Search client…" />
+              <EntityCombobox value={form.client_id} onChange={(id) => set("client_id", id)} options={clientOptions} placeholder="Search client…" emptyMessage="No clients found" />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Client PO #</Label>
               <Input value={form.client_po_number || ""} onChange={(e) => set("client_po_number", e.target.value)} />
@@ -255,7 +256,7 @@ export function InvoiceDialog({
               <Input type="date" value={form.due_date} onChange={(e) => set("due_date", e.target.value)} />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Payment terms</Label>
-              <Input value={form.payment_terms || ""} onChange={(e) => set("payment_terms", e.target.value)} placeholder="Net 30" />
+              <TermsCombobox value={form.payment_terms || ""} onChange={(v) => set("payment_terms", v)} />
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Tax amount</Label>
               <NumberInput value={form.tax_amount} onChange={(n) => set("tax_amount", n)} />

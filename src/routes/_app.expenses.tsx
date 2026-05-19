@@ -33,21 +33,21 @@ function ExpensesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["expenses"],
-    queryFn: async () => (await supabase.from("expenses").select("*").order("expense_date", { ascending: false })).data || [],
+    queryFn: async () => (await supabase.from("expenses").select("*, expense_categories(name)").order("expense_date", { ascending: false })).data || [],
   });
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
     const list = (data || []).filter((r: any) =>
       (r.vendor_name || "").toLowerCase().includes(s) ||
-      (r.category || "").toLowerCase().includes(s) ||
+      (r.expense_categories?.name || "").toLowerCase().includes(s) ||
       (r.notes || "").toLowerCase().includes(s)
     );
     const dir = sortDir === "asc" ? 1 : -1;
     const get = (r: any) => {
       switch (sortKey) {
         case "vendor_name": return (r.vendor_name || "").toLowerCase();
-        case "category": return (r.category || "").toLowerCase();
+        case "category": return (r.expense_categories?.name || "").toLowerCase();
         case "expense_date": return r.expense_date || "";
         case "amount": return Number(r.amount || 0);
       }
@@ -111,7 +111,7 @@ function ExpensesPage() {
                 <tr key={r.id} className="border-t border-border hover:bg-muted/30 transition-colors">
                   <Td><button onClick={() => edit(r.id)} className="font-medium hover:text-primary">{formatDate(r.expense_date)}</button></Td>
                   <Td>{r.vendor_name || "—"}</Td>
-                  <Td>{r.category || "—"}</Td>
+                  <Td>{r.expense_categories?.name || "—"}</Td>
                   <Td className="text-right font-medium tabular-nums">{formatCurrency(r.amount)}</Td>
                   <Td>{r.payment_method || "—"}</Td>
                   <Td>{r.receipt_url ? <button onClick={() => openReceipt(r.receipt_url)} className="text-primary hover:underline inline-flex"><Paperclip className="h-4 w-4" /></button> : "—"}</Td>

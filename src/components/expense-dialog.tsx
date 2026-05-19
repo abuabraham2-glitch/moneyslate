@@ -60,7 +60,7 @@ export function ExpenseDialog({
             id: data.id,
             expense_date: data.expense_date,
             vendor_name: data.vendor_name || "",
-            category: data.category || "",
+            category_id: data.category_id || "",
             amount: Number(data.amount || 0),
             payment_method: data.payment_method || "",
             receipt_url: data.receipt_url || "",
@@ -81,7 +81,7 @@ export function ExpenseDialog({
   const isDirty = JSON.stringify(form) !== baseline;
   const set = <K extends keyof ExpenseForm>(k: K, v: ExpenseForm[K]) => setForm((p) => ({ ...p, [k]: v }));
 
-  const categoryOptions = (categories as any[]).map((c) => ({ id: c.name, label: c.name }));
+  const categoryOptions = (categories as any[]).map((c) => ({ id: c.id, label: c.name }));
 
   const upload = async (file: File) => {
     setUploading(true);
@@ -102,14 +102,14 @@ export function ExpenseDialog({
   const save = async () => {
     if (!form.expense_date) { toast.error("Date required"); return; }
     if (!form.vendor_name.trim()) { toast.error("Vendor required"); return; }
-    if (!form.category) { toast.error("Category required"); return; }
+    if (!form.category_id) { toast.error("Category required"); return; }
     if (!form.amount || form.amount <= 0) { toast.error("Amount required"); return; }
     setSaving(true);
     try {
       const payload = {
         expense_date: form.expense_date,
         vendor_name: form.vendor_name.trim(),
-        category: form.category,
+        category_id: form.category_id,
         amount: form.amount,
         payment_method: form.payment_method || null,
         receipt_url: form.receipt_url || null,
@@ -158,8 +158,8 @@ export function ExpenseDialog({
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Category *</Label>
               <EntityCombobox
-                value={form.category || null}
-                onChange={(id) => set("category", id || "")}
+                value={form.category_id || null}
+                onChange={(id) => set("category_id", id || "")}
                 options={categoryOptions}
                 placeholder="Select category…"
                 emptyMessage="No categories found"

@@ -20,7 +20,7 @@ type ExpenseForm = {
   id?: string;
   expense_date: string;
   vendor_name: string;
-  category: string;
+  category_id: string;
   amount: number;
   payment_method: string;
   receipt_url: string;

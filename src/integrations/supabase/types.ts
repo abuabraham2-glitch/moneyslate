@@ -310,7 +310,7 @@ export type Database = {
       expenses: {
         Row: {
           amount: number
-          category: string | null
+          category_id: string
           created_at: string
           expense_date: string
           id: string
@@ -322,7 +322,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
-          category?: string | null
+          category_id: string
           created_at?: string
           expense_date?: string
           id?: string
@@ -334,7 +334,7 @@ export type Database = {
         }
         Update: {
           amount?: number
-          category?: string | null
+          category_id?: string
           created_at?: string
           expense_date?: string
           id?: string
@@ -344,7 +344,15 @@ export type Database = {
           updated_at?: string
           vendor_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_line_items: {
         Row: {

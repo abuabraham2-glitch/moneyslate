@@ -33,21 +33,21 @@ function ExpensesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["expenses"],
-    queryFn: async () => (await supabase.from("expenses").select("*").order("expense_date", { ascending: false })).data || [],
+    queryFn: async () => (await supabase.from("expenses").select("*, expense_categories(name)").order("expense_date", { ascending: false })).data || [],
   });
 
   const filtered = useMemo(() => {
     const s = search.toLowerCase();
     const list = (data || []).filter((r: any) =>
       (r.vendor_name || "").toLowerCase().includes(s) ||
-      (r.category || "").toLowerCase().includes(s) ||
+      (r.expense_categories?.name || "").toLowerCase().includes(s) ||
       (r.notes || "").toLowerCase().includes(s)
     );
     const dir = sortDir === "asc" ? 1 : -1;
     const get = (r: any) => {
       switch (sortKey) {
         case "vendor_name": return (r.vendor_name || "").toLowerCase();
-        case "category": return (r.category || "").toLowerCase();
+        case "category": return (r.expense_categories?.name || "").toLowerCase();
         case "expense_date": return r.expense_date || "";
         case "amount": return Number(r.amount || 0);
       }

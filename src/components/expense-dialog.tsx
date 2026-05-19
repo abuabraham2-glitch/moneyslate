@@ -38,7 +38,7 @@ export function ExpenseDialog({
 }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
-  const blank: ExpenseForm = { expense_date: today, vendor_name: "", category: "", amount: 0, payment_method: "", receipt_url: "", notes: "" };
+  const blank: ExpenseForm = { expense_date: today, vendor_name: "", category_id: "", amount: 0, payment_method: "", receipt_url: "", notes: "" };
 
   const [form, setForm] = useState<ExpenseForm>(blank);
   const [baseline, setBaseline] = useState("");

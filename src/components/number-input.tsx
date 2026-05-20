@@ -62,10 +62,18 @@ export function NumberInput({
       placeholder={placeholder}
       className={className}
       onKeyDown={onKeyDown}
-      onFocus={() => {
+      onFocus={(e) => {
         focusedRef.current = true;
         // Strip commas while editing
         setText((t) => t.replace(/,/g, ""));
+        // Select all so the next keystroke replaces the value cleanly
+        // whether the user tabbed or clicked in.
+        const el = e.currentTarget;
+        requestAnimationFrame(() => { try { el.select(); } catch {} });
+      }}
+      onMouseUp={(e) => {
+        // Prevent click from collapsing the selection set in onFocus.
+        if (document.activeElement === e.currentTarget) e.preventDefault();
       }}
       onChange={(e) => {
         const raw = e.target.value.replace(/,/g, "");

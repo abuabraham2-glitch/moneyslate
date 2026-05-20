@@ -178,13 +178,26 @@ export function ExpenseDialog({
             </div>
             <div className="space-y-1.5"><Label className="text-xs">Receipt</Label>
               {form.receipt_url ? (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm border border-input rounded-md px-3 h-9">
                   <Paperclip className="h-4 w-4 text-muted-foreground" />
                   <span className="truncate flex-1">{form.receipt_url.split("/").pop()}</span>
-                  <Button type="button" size="icon" variant="ghost" onClick={() => set("receipt_url", "")}><X className="h-4 w-4" /></Button>
+                  <Button type="button" size="icon" variant="ghost" className="h-6 w-6" onClick={() => set("receipt_url", "")}><X className="h-4 w-4" /></Button>
                 </div>
               ) : (
-                <Input type="file" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
+                <label
+                  htmlFor="receipt-file-input"
+                  className={`flex items-center gap-2 text-sm border border-input rounded-md px-3 h-9 cursor-pointer hover:bg-accent/40 transition-colors ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+                >
+                  <Paperclip className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{uploading ? "Uploading…" : "Choose file…"}</span>
+                  <input
+                    id="receipt-file-input"
+                    type="file"
+                    className="sr-only"
+                    disabled={uploading}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }}
+                  />
+                </label>
               )}
             </div>
           </div>

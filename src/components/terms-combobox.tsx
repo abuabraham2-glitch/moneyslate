@@ -27,35 +27,61 @@ export function TermsCombobox({
   emptyMessage?: string;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState(value || "");
+  const [browsing, setBrowsing] = React.useState(false);
   const [highlight, setHighlight] = React.useState(0);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState<number>();
+
+  React.useEffect(() => { if (!open) setQuery(value || ""); }, [value, open]);
 
   React.useEffect(() => {
     if (open && anchorRef.current) setWidth(anchorRef.current.offsetWidth);
   }, [open]);
 
-  const q = (value || "").trim().toLowerCase();
+  const q = browsing ? "" : query.trim().toLowerCase();
   const filtered = q ? options.filter((o) => o.toLowerCase().includes(q)) : options;
 
-  React.useEffect(() => { setHighlight(0); }, [value, open]);
+  React.useEffect(() => { setHighlight(0); }, [query, open, browsing]);
 
-  const commit = (v: string) => { onChange(v); setOpen(false); };
+  const commit = (v: string) => {
+    onChange(v);
+    setQuery(v);
+    setBrowsing(false);
+    setOpen(false);
+  };
+
+  const openAndBrowse = () => { setBrowsing(true); setOpen(true); };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
       <PopoverAnchor asChild>
         <div ref={anchorRef}>
           <Input
-            value={value || ""}
-            placeholder={placeholder}
-            onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-            onFocus={() => setOpen(true)}
+            value={browsing ? "" : query}
+            placeholder={browsing && value ? value : placeholder}
+            onChange={(e) => { setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
+            onFocus={openAndBrowse}
+            onClick={openAndBrowse}
+            onBlur={() => {
+              const trimmed = query.trim();
+              const exact = options.find((o) => o.toLowerCase() === trimmed.toLowerCase());
+              if (exact) commit(exact);
+              else if (trimmed) { onChange(trimmed); setQuery(trimmed); }
+              else setQuery(value || "");
+              setBrowsing(false);
+            }}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setHighlight((h) => Math.min(h + 1, filtered.length - 1)); }
               else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
-              else if (e.key === "Enter") { if (open && filtered[highlight]) { e.preventDefault(); commit(filtered[highlight]); } }
-              else if (e.key === "Escape") { setOpen(false); }
+              else if (e.key === "Enter") {
+                e.preventDefault();
+                if (!browsing && query.trim() && filtered[highlight]) commit(filtered[highlight]);
+              }
+              else if (e.key === "Tab") {
+                if (open && !browsing && query.trim() && filtered[highlight]) commit(filtered[highlight]);
+              }
+              else if (e.key === "Escape") { setOpen(false); setBrowsing(false); }
             }}
           />
         </div>

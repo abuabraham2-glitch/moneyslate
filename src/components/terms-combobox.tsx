@@ -49,6 +49,7 @@ export function TermsCombobox({
   React.useEffect(() => { setHighlight(0); }, [query, open, browsing]);
 
   const commit = (v: string) => {
+    justCommittedRef.current = true;
     onChange(v);
     setQuery(v);
     setBrowsing(false);

@@ -32,6 +32,10 @@ export function TermsCombobox({
   const [highlight, setHighlight] = React.useState(0);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState<number>();
+  // When set, the next blur should be ignored — we just committed a match
+  // via Tab/Enter and don't want the blur handler to overwrite it with
+  // free-text fallback.
+  const justCommittedRef = React.useRef(false);
 
   React.useEffect(() => { if (!open) setQuery(value || ""); }, [value, open]);
 
@@ -45,6 +49,7 @@ export function TermsCombobox({
   React.useEffect(() => { setHighlight(0); }, [query, open, browsing]);
 
   const commit = (v: string) => {
+    justCommittedRef.current = true;
     onChange(v);
     setQuery(v);
     setBrowsing(false);
@@ -64,6 +69,7 @@ export function TermsCombobox({
             onFocus={openAndBrowse}
             onClick={openAndBrowse}
             onBlur={() => {
+              if (justCommittedRef.current) { justCommittedRef.current = false; setBrowsing(false); return; }
               const trimmed = query.trim();
               const exact = options.find((o) => o.toLowerCase() === trimmed.toLowerCase());
               if (exact) commit(exact);
@@ -89,10 +95,12 @@ export function TermsCombobox({
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
         style={width ? { width } : undefined}
-        className="p-0 max-h-72 overflow-auto z-[100]"
+        className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onWheel={(e) => e.stopPropagation()}
       >
         <div className="py-1">
+
           {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}
           {filtered.map((o, i) => (
             <button

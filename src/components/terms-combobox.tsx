@@ -32,6 +32,10 @@ export function TermsCombobox({
   const [highlight, setHighlight] = React.useState(0);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState<number>();
+  // When set, the next blur should be ignored — we just committed a match
+  // via Tab/Enter and don't want the blur handler to overwrite it with
+  // free-text fallback.
+  const justCommittedRef = React.useRef(false);
 
   React.useEffect(() => { if (!open) setQuery(value || ""); }, [value, open]);
 

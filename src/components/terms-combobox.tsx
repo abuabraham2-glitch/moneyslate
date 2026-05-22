@@ -69,6 +69,7 @@ export function TermsCombobox({
             onFocus={openAndBrowse}
             onClick={openAndBrowse}
             onBlur={() => {
+              if (justCommittedRef.current) { justCommittedRef.current = false; setBrowsing(false); return; }
               const trimmed = query.trim();
               const exact = options.find((o) => o.toLowerCase() === trimmed.toLowerCase());
               if (exact) commit(exact);

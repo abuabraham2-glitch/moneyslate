@@ -91,10 +91,12 @@ export function EntityCombobox({
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
         style={width ? { width } : undefined}
-        className="p-0 max-h-72 overflow-auto z-[100]"
+        className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onWheel={(e) => e.stopPropagation()}
       >
         <div className="py-1">
+
           {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}
           {filtered.map((o, i) => (
             <button

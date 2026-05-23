@@ -53,7 +53,7 @@ export function EntityCombobox({
   };
 
   return (
-    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
+    <Popover open={open} modal={false} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
       <PopoverAnchor asChild>
         <div ref={anchorRef}>
           <Input

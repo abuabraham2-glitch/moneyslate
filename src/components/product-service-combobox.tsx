@@ -84,7 +84,7 @@ export function ProductServiceCombobox({
   const openAndBrowse = () => { setBrowsing(true); setOpen(true); };
 
   return (
-    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
+    <Popover open={open} modal={false} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
       <PopoverAnchor asChild>
         <div ref={anchorRef}>
           <Input
@@ -126,7 +126,7 @@ export function ProductServiceCombobox({
         style={width ? { width } : undefined}
         className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        onWheel={(e) => e.stopPropagation()}
+        onWheelCapture={(e) => e.stopPropagation()}
       >
         <div className="py-1">
 

@@ -32,10 +32,11 @@ export function TermsCombobox({
   const [highlight, setHighlight] = React.useState(0);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState<number>();
-  // When set, the next blur should be ignored — we just committed a match
-  // via Tab/Enter and don't want the blur handler to overwrite it with
-  // free-text fallback.
+  // Set after a commit via Tab/Enter so the immediate blur doesn't re-run free-text fallback.
   const justCommittedRef = React.useRef(false);
+  // True once the user has actually typed in the input during the current focus session.
+  // Blur without typing must NOT call onChange — it must preserve the parent value as-is.
+  const dirtyRef = React.useRef(false);
 
   React.useEffect(() => { if (!open) setQuery(value || ""); }, [value, open]);
 
@@ -50,31 +51,35 @@ export function TermsCombobox({
 
   const commit = (v: string) => {
     justCommittedRef.current = true;
+    dirtyRef.current = false;
     onChange(v);
     setQuery(v);
     setBrowsing(false);
     setOpen(false);
   };
 
-  const openAndBrowse = () => { setBrowsing(true); setOpen(true); };
+  const openAndBrowse = () => { dirtyRef.current = false; setBrowsing(true); setOpen(true); };
 
   return (
-    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
+    <Popover open={open} modal={false} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
       <PopoverAnchor asChild>
         <div ref={anchorRef}>
           <Input
             value={browsing ? "" : query}
             placeholder={browsing && value ? value : placeholder}
-            onChange={(e) => { setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
+            onChange={(e) => { dirtyRef.current = true; setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
             onFocus={openAndBrowse}
             onClick={openAndBrowse}
             onBlur={() => {
-              if (justCommittedRef.current) { justCommittedRef.current = false; setBrowsing(false); return; }
+              if (justCommittedRef.current) { justCommittedRef.current = false; dirtyRef.current = false; setBrowsing(false); return; }
+              // If the user never typed during this focus session, preserve parent value unchanged.
+              if (!dirtyRef.current) { setQuery(value || ""); setBrowsing(false); return; }
               const trimmed = query.trim();
               const exact = options.find((o) => o.toLowerCase() === trimmed.toLowerCase());
               if (exact) commit(exact);
               else if (trimmed) { onChange(trimmed); setQuery(trimmed); }
               else setQuery(value || "");
+              dirtyRef.current = false;
               setBrowsing(false);
             }}
             onKeyDown={(e) => {
@@ -97,7 +102,7 @@ export function TermsCombobox({
         style={width ? { width } : undefined}
         className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        onWheel={(e) => e.stopPropagation()}
+        onWheelCapture={(e) => e.stopPropagation()}
       >
         <div className="py-1">
 

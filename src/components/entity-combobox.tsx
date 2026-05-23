@@ -93,7 +93,7 @@ export function EntityCombobox({
         style={width ? { width } : undefined}
         className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        onWheel={(e) => e.stopPropagation()}
+        onWheelCapture={(e) => e.stopPropagation()}
       >
         <div className="py-1">
 

@@ -24,6 +24,10 @@ export function EntityCombobox({
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [width, setWidth] = React.useState<number>();
+  // True once the user has actually typed during the current focus session.
+  // Blur without typing must NOT re-commit — re-committing the same id triggers
+  // parent side-effects (e.g. resetting payment_terms on the invoice dialog).
+  const dirtyRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!open) setQuery(options.find((o) => o.id === value)?.label || "");

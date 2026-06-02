@@ -89,6 +89,7 @@ export function ProductServiceCombobox({
         <div ref={anchorRef}>
           <Input
             value={browsing ? "" : query}
+            autoComplete="off"
             placeholder={selected && browsing ? selected.name : "Select…"}
             className={cn("border-0 shadow-none h-9 px-2", className)}
             onChange={(e) => { setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
@@ -123,10 +124,11 @@ export function ProductServiceCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={width ? { width } : undefined}
+        style={width ? { width, pointerEvents: "auto" } : { pointerEvents: "auto" }}
         className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onWheelCapture={(e) => e.stopPropagation()}
+        onPointerDownCapture={(e) => e.stopPropagation()}
       >
         <div className="py-1">
 

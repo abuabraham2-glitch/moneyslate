@@ -66,6 +66,7 @@ export function TermsCombobox({
         <div ref={anchorRef}>
           <Input
             value={browsing ? "" : query}
+            autoComplete="off"
             placeholder={browsing && value ? value : placeholder}
             onChange={(e) => { dirtyRef.current = true; setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
             onFocus={openAndBrowse}
@@ -99,10 +100,11 @@ export function TermsCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={width ? { width } : undefined}
+        style={width ? { width, pointerEvents: "auto" } : { pointerEvents: "auto" }}
         className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onWheelCapture={(e) => e.stopPropagation()}
+        onPointerDownCapture={(e) => e.stopPropagation()}
       >
         <div className="py-1">
 

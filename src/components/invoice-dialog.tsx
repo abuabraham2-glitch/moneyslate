@@ -109,7 +109,7 @@ export function InvoiceDialog({
   const set = (k: keyof InvoiceForm, v: any) => {
     setForm((p) => {
       const next = { ...p, [k]: v };
-      if (k === "client_id") {
+      if (k === "client_id" && v !== p.client_id) {
         const c = clients.find((c: any) => c.id === v);
         if (p.id && c?.payment_terms) {
           next.payment_terms = c.payment_terms;

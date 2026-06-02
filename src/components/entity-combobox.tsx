@@ -24,6 +24,10 @@ export function EntityCombobox({
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [width, setWidth] = React.useState<number>();
+  // True once the user has actually typed during the current focus session.
+  // Blur without typing must NOT re-commit — re-committing the same id triggers
+  // parent side-effects (e.g. resetting payment_terms on the invoice dialog).
+  const dirtyRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!open) setQuery(options.find((o) => o.id === value)?.label || "");
@@ -41,6 +45,7 @@ export function EntityCombobox({
   React.useEffect(() => { setHighlight(0); }, [query, open, browsing]);
 
   const commit = (opt: ComboOption) => {
+    dirtyRef.current = false;
     onChange(opt.id);
     setQuery(opt.label);
     setBrowsing(false);
@@ -48,6 +53,7 @@ export function EntityCombobox({
   };
 
   const openAndBrowse = () => {
+    dirtyRef.current = false;
     setBrowsing(true);
     setOpen(true);
   };
@@ -59,14 +65,19 @@ export function EntityCombobox({
           <Input
             ref={inputRef}
             value={browsing ? "" : query}
+            autoComplete="off"
             placeholder={selected && browsing ? selected.label : placeholder}
-            onChange={(e) => { setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
+            onChange={(e) => { dirtyRef.current = true; setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
             onFocus={openAndBrowse}
             onClick={openAndBrowse}
             onBlur={() => {
+              // No-op if the user didn't type — avoids re-committing the same value
+              // and firing parent side-effects on click-outside.
+              if (!dirtyRef.current) { setQuery(selected?.label || ""); setBrowsing(false); return; }
               const exact = options.find((o) => o.label.toLowerCase() === query.trim().toLowerCase());
               if (exact) commit(exact);
               else setQuery(selected?.label || "");
+              dirtyRef.current = false;
               setBrowsing(false);
             }}
             onKeyDown={(e) => {
@@ -90,10 +101,11 @@ export function EntityCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={width ? { width } : undefined}
+        style={width ? { width, pointerEvents: "auto" } : { pointerEvents: "auto" }}
         className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onWheelCapture={(e) => e.stopPropagation()}
+        onPointerDownCapture={(e) => e.stopPropagation()}
       >
         <div className="py-1">
 

@@ -45,6 +45,7 @@ export function EntityCombobox({
   React.useEffect(() => { setHighlight(0); }, [query, open, browsing]);
 
   const commit = (opt: ComboOption) => {
+    dirtyRef.current = false;
     onChange(opt.id);
     setQuery(opt.label);
     setBrowsing(false);
@@ -52,6 +53,7 @@ export function EntityCombobox({
   };
 
   const openAndBrowse = () => {
+    dirtyRef.current = false;
     setBrowsing(true);
     setOpen(true);
   };

@@ -89,6 +89,7 @@ export function ProductServiceCombobox({
         <div ref={anchorRef}>
           <Input
             value={browsing ? "" : query}
+            autoComplete="off"
             placeholder={selected && browsing ? selected.name : "Select…"}
             className={cn("border-0 shadow-none h-9 px-2", className)}
             onChange={(e) => { setQuery(e.target.value); setBrowsing(false); setOpen(true); }}

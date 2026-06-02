@@ -66,6 +66,7 @@ export function TermsCombobox({
         <div ref={anchorRef}>
           <Input
             value={browsing ? "" : query}
+            autoComplete="off"
             placeholder={browsing && value ? value : placeholder}
             onChange={(e) => { dirtyRef.current = true; setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
             onFocus={openAndBrowse}

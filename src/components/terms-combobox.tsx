@@ -100,10 +100,11 @@ export function TermsCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={width ? { width } : undefined}
+        style={width ? { width, pointerEvents: "auto" } : { pointerEvents: "auto" }}
         className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onWheelCapture={(e) => e.stopPropagation()}
+        onPointerDownCapture={(e) => e.stopPropagation()}
       >
         <div className="py-1">
 

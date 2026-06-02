@@ -63,14 +63,19 @@ export function EntityCombobox({
           <Input
             ref={inputRef}
             value={browsing ? "" : query}
+            autoComplete="off"
             placeholder={selected && browsing ? selected.label : placeholder}
-            onChange={(e) => { setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
+            onChange={(e) => { dirtyRef.current = true; setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
             onFocus={openAndBrowse}
             onClick={openAndBrowse}
             onBlur={() => {
+              // No-op if the user didn't type — avoids re-committing the same value
+              // and firing parent side-effects on click-outside.
+              if (!dirtyRef.current) { setQuery(selected?.label || ""); setBrowsing(false); return; }
               const exact = options.find((o) => o.label.toLowerCase() === query.trim().toLowerCase());
               if (exact) commit(exact);
               else setQuery(selected?.label || "");
+              dirtyRef.current = false;
               setBrowsing(false);
             }}
             onKeyDown={(e) => {

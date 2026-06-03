@@ -93,10 +93,19 @@ export function ExpensesIcon({ size = 18, ...rest }: IconProps) {
 
 export function ReconciliationIcon({ size = 18, ...rest }: IconProps) {
   return (
-    <svg {...svgBase(size)} {...rest}>
-      <rect x="4" y="11" width="7" height="2" rx="1" fill="#D8E5D2" />
-      <rect x="13" y="11" width="7" height="2" rx="1" fill="#D8E5D2" />
-      <circle cx="12" cy="12" r="1.5" fill="#C8D7C0" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...rest}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12.5l2.5 2.5L16 9.5" />
     </svg>
   );
 }

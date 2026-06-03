@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 export type ComboOption = { id: string; label: string; sub?: string };
@@ -101,32 +102,31 @@ export function EntityCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={width ? { width, pointerEvents: "auto" } : { pointerEvents: "auto" }}
-        className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
+        style={width ? { width } : undefined}
+        className="p-0 z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        onWheelCapture={(e) => e.stopPropagation()}
-        onPointerDownCapture={(e) => e.stopPropagation()}
       >
-        <div className="py-1">
-
-          {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}
-          {filtered.map((o, i) => (
-            <button
-              key={o.id}
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); commit(o); }}
-              onMouseEnter={() => setHighlight(i)}
-              className={cn(
-                "w-full text-left px-3 py-2 text-sm flex flex-col",
-                i === highlight ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
-                value === o.id && "font-medium",
-              )}
-            >
-              <span>{o.label}</span>
-              {o.sub && <span className="text-xs text-muted-foreground">{o.sub}</span>}
-            </button>
-          ))}
-        </div>
+        <ScrollArea className="max-h-72">
+          <div className="py-1">
+            {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}
+            {filtered.map((o, i) => (
+              <button
+                key={o.id}
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); commit(o); }}
+                onMouseEnter={() => setHighlight(i)}
+                className={cn(
+                  "w-full text-left px-3 py-2 text-sm flex flex-col",
+                  i === highlight ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                  value === o.id && "font-medium",
+                )}
+              >
+                <span>{o.label}</span>
+                {o.sub && <span className="text-xs text-muted-foreground">{o.sub}</span>}
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
       </PopoverContent>
     </Popover>
   );

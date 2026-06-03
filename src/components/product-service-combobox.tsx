@@ -103,7 +103,7 @@ export function ProductServiceCombobox({
             onBlur={() => {
               // If the user never typed, do NOT re-commit — re-committing closes the popover,
               // which would collapse it when the user clicks the native scrollbar gutter.
-              if (!dirtyRef.current) { setQuery(selected?.name || ""); setBrowsing(false); return; }
+              if (!dirtyRef.current) { return; }
               const exact = items.find((o) => o.name.toLowerCase() === trimmed.toLowerCase());
               if (exact) commit(exact);
               else setQuery(selected?.name || "");

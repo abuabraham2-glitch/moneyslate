@@ -44,6 +44,10 @@ export function ProductServiceCombobox({
   const [highlight, setHighlight] = React.useState(0);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState<number>();
+  // True once the user actually typed during the current focus session.
+  // Blur without typing must NOT re-commit — re-committing closes the popover.
+  const dirtyRef = React.useRef(false);
+
 
   React.useEffect(() => {
     if (!open) setQuery(items.find((i) => i.id === value)?.name || "");

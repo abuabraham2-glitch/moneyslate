@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, X } from "lucide-react";
@@ -28,8 +29,25 @@ export function LineItemEditor({
     next[idx] = calculateLineItem({ ...next[idx], ...patch }, priceField, source);
     onChange(next);
   };
-  const add = () => onChange([...items, createEmptyLineItem(priceField)]);
+  const rowRefs = React.useRef<Array<HTMLTableCellElement | null>>([]);
+  const focusIdxRef = React.useRef<number | null>(null);
+
+  const add = () => {
+    focusIdxRef.current = items.length;
+    onChange([...items, createEmptyLineItem(priceField)]);
+  };
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx));
+
+  React.useEffect(() => {
+    const idx = focusIdxRef.current;
+    if (idx == null) return;
+    focusIdxRef.current = null;
+    requestAnimationFrame(() => {
+      const cell = rowRefs.current[idx];
+      const input = cell?.querySelector<HTMLInputElement>("input");
+      input?.focus();
+    });
+  }, [items.length]);
 
   // Block Enter from doing anything in single-line numeric/combobox cells
   const blockEnter = (e: React.KeyboardEvent) => { if (e.key === "Enter") e.preventDefault(); };
@@ -50,7 +68,11 @@ export function LineItemEditor({
         <tbody>
           {items.map((it, idx) => (
             <tr key={idx} className="border-t border-border align-top">
-              <td className="px-1 py-1.5" onKeyDown={blockEnter}>
+              <td
+                className="px-1 py-1.5"
+                onKeyDown={blockEnter}
+                ref={(el) => { rowRefs.current[idx] = el; }}
+              >
                 <ProductServiceCombobox
                   value={it.product_service_id || null}
                   onPick={(ps) => {
@@ -58,10 +80,12 @@ export function LineItemEditor({
                     const patch: Partial<LineItem> = { product_service_id: ps.id };
                     if (!it.description && ps.default_description) patch.description = ps.default_description;
                     const defaultPrice = priceField === "unit_price" ? ps.default_price : ps.default_cost;
-                    if (defaultPrice != null && !(it as any)[priceField]) {
+                    let source: LineItemEditedField = "init";
+                    if (defaultPrice != null) {
                       (patch as any)[priceField] = Number(defaultPrice);
+                      source = priceField;
                     }
-                    update(idx, patch, (patch as any)[priceField] != null ? priceField : "init");
+                    update(idx, patch, source);
                   }}
                 />
               </td>

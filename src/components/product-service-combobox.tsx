@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -124,46 +125,45 @@ export function ProductServiceCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={width ? { width, pointerEvents: "auto" } : { pointerEvents: "auto" }}
-        className="p-0 max-h-72 overflow-y-auto overscroll-contain z-[100]"
+        style={width ? { width } : undefined}
+        className="p-0 z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        onWheelCapture={(e) => e.stopPropagation()}
-        onPointerDownCapture={(e) => e.stopPropagation()}
       >
-        <div className="py-1">
-
-          {filtered.length === 0 && !canCreate && (
-            <div className="px-3 py-2 text-sm text-muted-foreground">No products found</div>
-          )}
-          {filtered.map((o, i) => (
-            <button
-              key={o.id}
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); commit(o); }}
-              onMouseEnter={() => setHighlight(i)}
-              className={cn(
-                "w-full text-left px-3 py-2 text-sm",
-                i === highlight ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
-                value === o.id && "font-medium",
-              )}
-            >
-              {o.name}
-            </button>
-          ))}
-          {canCreate && (
-            <button
-              type="button"
-              onMouseDown={(e) => { e.preventDefault(); createInline(); }}
-              onMouseEnter={() => setHighlight(filtered.length)}
-              className={cn(
-                "w-full text-left px-3 py-2 text-sm flex items-center gap-1.5",
-                highlight === filtered.length ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
-              )}
-            >
-              <Plus className="h-3.5 w-3.5" /> Create "{trimmed}"
-            </button>
-          )}
-        </div>
+        <ScrollArea className="max-h-72">
+          <div className="py-1">
+            {filtered.length === 0 && !canCreate && (
+              <div className="px-3 py-2 text-sm text-muted-foreground">No products found</div>
+            )}
+            {filtered.map((o, i) => (
+              <button
+                key={o.id}
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); commit(o); }}
+                onMouseEnter={() => setHighlight(i)}
+                className={cn(
+                  "w-full text-left px-3 py-2 text-sm",
+                  i === highlight ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                  value === o.id && "font-medium",
+                )}
+              >
+                {o.name}
+              </button>
+            ))}
+            {canCreate && (
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); createInline(); }}
+                onMouseEnter={() => setHighlight(filtered.length)}
+                className={cn(
+                  "w-full text-left px-3 py-2 text-sm flex items-center gap-1.5",
+                  highlight === filtered.length ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                )}
+              >
+                <Plus className="h-3.5 w-3.5" /> Create "{trimmed}"
+              </button>
+            )}
+          </div>
+        </ScrollArea>
       </PopoverContent>
     </Popover>
   );

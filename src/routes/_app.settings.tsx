@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { ProductsServicesSettings } from "@/components/products-services-settings";
+import { ExpenseCategoriesSettings } from "@/components/expense-categories-settings";
 
 export const Route = createFileRoute("/_app/settings")({ component: SettingsPage });
 
@@ -81,6 +82,7 @@ function SettingsPage() {
           </CardContent></Card>
 
         <ProductsServicesSettings />
+        <ExpenseCategoriesSettings />
 
         <Card className="shadow-card"><CardHeader><CardTitle className="text-base">Integrations</CardTitle></CardHeader>
           <CardContent className="space-y-4">

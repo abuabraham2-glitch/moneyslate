@@ -623,6 +623,38 @@ export type Database = {
           },
         ]
       }
+      reconciliation_matches: {
+        Row: {
+          bank_txn_id: string
+          created_at: string
+          id: string
+          record_id: string
+          record_type: string
+        }
+        Insert: {
+          bank_txn_id: string
+          created_at?: string
+          id?: string
+          record_id: string
+          record_type: string
+        }
+        Update: {
+          bank_txn_id?: string
+          created_at?: string
+          id?: string
+          record_id?: string
+          record_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reconciliation_matches_bank_txn_id_fkey"
+            columns: ["bank_txn_id"]
+            isOneToOne: false
+            referencedRelation: "bank_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           command_center_api_key: string | null

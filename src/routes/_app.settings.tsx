@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Copy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { ProductsServicesSettings } from "@/components/products-services-settings";
+import { ExpenseCategoriesSettings } from "@/components/expense-categories-settings";
 
 export const Route = createFileRoute("/_app/settings")({ component: SettingsPage });
 

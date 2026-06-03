@@ -75,7 +75,7 @@ export function TermsCombobox({
             onBlur={() => {
               if (justCommittedRef.current) { justCommittedRef.current = false; dirtyRef.current = false; setBrowsing(false); return; }
               // If the user never typed during this focus session, preserve parent value unchanged.
-              if (!dirtyRef.current) { setQuery(value || ""); setBrowsing(false); return; }
+              if (!dirtyRef.current) { return; }
               const trimmed = query.trim();
               const exact = options.find((o) => o.toLowerCase() === trimmed.toLowerCase());
               if (exact) commit(exact);

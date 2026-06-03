@@ -73,7 +73,7 @@ export function EntityCombobox({
             onBlur={() => {
               // No-op if the user didn't type — avoids re-committing the same value
               // and firing parent side-effects on click-outside.
-              if (!dirtyRef.current) { setQuery(selected?.label || ""); setBrowsing(false); return; }
+              if (!dirtyRef.current) { return; }
               const exact = options.find((o) => o.label.toLowerCase() === query.trim().toLowerCase());
               if (exact) commit(exact);
               else setQuery(selected?.label || "");

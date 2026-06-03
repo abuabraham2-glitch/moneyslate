@@ -101,15 +101,10 @@ export function TermsCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={{ ...(width ? { width } : {}), pointerEvents: "auto" }}
+        style={width ? { width } : undefined}
         className="p-0 z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onWheelCapture={(e) => e.stopPropagation()}
-        onPointerDownOutside={(e) => {
-          const oe = e.detail.originalEvent as PointerEvent;
-          const t = oe.target as HTMLElement | null;
-          if (t && oe.offsetX > t.clientWidth) e.preventDefault();
-        }}
       >
         <div className="max-h-72 overflow-y-auto py-1">
           {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}

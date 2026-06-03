@@ -101,31 +101,35 @@ export function EntityCombobox({
       </PopoverAnchor>
       <PopoverContent
         side="bottom" align="start" sideOffset={4}
-        style={width ? { width } : undefined}
+        style={{ ...(width ? { width } : {}), pointerEvents: "auto" }}
         className="p-0 z-[100]"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onWheelCapture={(e) => e.stopPropagation()}
+        onPointerDownOutside={(e) => {
+          const oe = e.detail.originalEvent as PointerEvent;
+          const t = oe.target as HTMLElement | null;
+          if (t && oe.offsetX > t.clientWidth) e.preventDefault();
+        }}
       >
-        <ScrollArea className="max-h-72">
-          <div className="py-1">
-            {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}
-            {filtered.map((o, i) => (
-              <button
-                key={o.id}
-                type="button"
-                onMouseDown={(e) => { e.preventDefault(); commit(o); }}
-                onMouseEnter={() => setHighlight(i)}
-                className={cn(
-                  "w-full text-left px-3 py-2 text-sm flex flex-col",
-                  i === highlight ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
-                  value === o.id && "font-medium",
-                )}
-              >
-                <span>{o.label}</span>
-                {o.sub && <span className="text-xs text-muted-foreground">{o.sub}</span>}
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
+        <div className="max-h-72 overflow-y-auto py-1">
+          {filtered.length === 0 && <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>}
+          {filtered.map((o, i) => (
+            <button
+              key={o.id}
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); commit(o); }}
+              onMouseEnter={() => setHighlight(i)}
+              className={cn(
+                "w-full text-left px-3 py-2 text-sm flex flex-col",
+                i === highlight ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                value === o.id && "font-medium",
+              )}
+            >
+              <span>{o.label}</span>
+              {o.sub && <span className="text-xs text-muted-foreground">{o.sub}</span>}
+            </button>
+          ))}
+        </div>
       </PopoverContent>
     </Popover>
   );

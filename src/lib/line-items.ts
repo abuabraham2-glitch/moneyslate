@@ -40,7 +40,8 @@ export function calculateLineItem(
 
   if (source === "line_total") {
     nextTotal = roundTo(currentTotal, 2);
-    if (quantity > 0) nextPrice = roundTo(nextTotal / quantity, 2);
+    // Store full precision; display layer rounds for presentation.
+    if (quantity > 0) nextPrice = nextTotal / quantity;
   } else {
     nextTotal = roundTo(quantity * currentPrice, 2);
   }

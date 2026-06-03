@@ -44,6 +44,10 @@ export function ProductServiceCombobox({
   const [highlight, setHighlight] = React.useState(0);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState<number>();
+  // True once the user actually typed during the current focus session.
+  // Blur without typing must NOT re-commit — re-committing closes the popover.
+  const dirtyRef = React.useRef(false);
+
 
   React.useEffect(() => {
     if (!open) setQuery(items.find((i) => i.id === value)?.name || "");
@@ -62,6 +66,7 @@ export function ProductServiceCombobox({
   React.useEffect(() => { setHighlight(0); }, [query, open, browsing]);
 
   const commit = (opt: ProductService) => {
+    dirtyRef.current = false;
     onPick(opt);
     setQuery(opt.name);
     setBrowsing(false);
@@ -81,7 +86,7 @@ export function ProductServiceCombobox({
     commit(data as any);
   };
 
-  const openAndBrowse = () => { setBrowsing(true); setOpen(true); };
+  const openAndBrowse = () => { dirtyRef.current = false; setBrowsing(true); setOpen(true); };
 
   return (
     <Popover open={open} modal={false} onOpenChange={(v) => { setOpen(v); if (!v) setBrowsing(false); }}>
@@ -92,15 +97,20 @@ export function ProductServiceCombobox({
             autoComplete="off"
             placeholder={selected && browsing ? selected.name : "Select…"}
             className={cn("border-0 shadow-none h-9 px-2", className)}
-            onChange={(e) => { setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
+            onChange={(e) => { dirtyRef.current = true; setQuery(e.target.value); setBrowsing(false); setOpen(true); }}
             onFocus={openAndBrowse}
             onClick={openAndBrowse}
             onBlur={() => {
+              // If the user never typed, do NOT re-commit — re-committing closes the popover,
+              // which would collapse it when the user clicks the native scrollbar gutter.
+              if (!dirtyRef.current) { setQuery(selected?.name || ""); setBrowsing(false); return; }
               const exact = items.find((o) => o.name.toLowerCase() === trimmed.toLowerCase());
               if (exact) commit(exact);
               else setQuery(selected?.name || "");
+              dirtyRef.current = false;
               setBrowsing(false);
             }}
+
             onKeyDown={(e) => {
               const total = filtered.length + (canCreate ? 1 : 0);
               if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setHighlight((h) => Math.min(h + 1, total - 1)); }

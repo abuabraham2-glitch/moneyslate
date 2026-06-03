@@ -82,6 +82,7 @@ function SettingsPage() {
           </CardContent></Card>
 
         <ProductsServicesSettings />
+        <ExpenseCategoriesSettings />
 
         <Card className="shadow-card"><CardHeader><CardTitle className="text-base">Integrations</CardTitle></CardHeader>
           <CardContent className="space-y-4">

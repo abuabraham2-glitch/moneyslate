@@ -130,6 +130,7 @@ export function ExpenseDialog({
       qc.invalidateQueries({ queryKey: ["expenses"] });
       toast.success("Expense saved");
       setBaseline(JSON.stringify(form));
+      onSaved?.(id!);
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);

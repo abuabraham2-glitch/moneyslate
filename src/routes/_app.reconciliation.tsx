@@ -338,8 +338,9 @@ function ReconciliationPage() {
               ref={fileRef}
               type="file"
               accept=".csv,text/csv"
+              multiple
               className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              onChange={(e) => { const fs = e.target.files; if (fs && fs.length) handleFiles(fs); }}
             />
             <Button onClick={() => fileRef.current?.click()} disabled={uploading}>
               <Upload className="h-4 w-4 mr-2" />

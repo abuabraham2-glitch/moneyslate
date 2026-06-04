@@ -72,7 +72,7 @@ export function ExpenseDialog({
           setBaseline(JSON.stringify(f));
         }
       } else {
-        const f = { ...blank, expense_date: today };
+        const f = { ...blank, expense_date: today, ...(prefill || {}) };
         setForm(f);
         setBaseline(JSON.stringify(f));
       }

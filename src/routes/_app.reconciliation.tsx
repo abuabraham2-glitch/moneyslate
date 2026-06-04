@@ -461,7 +461,7 @@ function MatchDialog({
         }));
         const e: Candidate[] = (expenses.data || []).map((r: any) => ({
           id: r.id, type: "expense", label: r.vendor_name || "Expense",
-          sub: "Expense", paid: false,
+          sub: "Expense",
           date: r.expense_date, amount: Number(r.amount),
         }));
         return [...b, ...e].sort((a, z) => z.date.localeCompare(a.date));

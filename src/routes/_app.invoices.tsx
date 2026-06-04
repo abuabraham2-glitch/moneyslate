@@ -132,7 +132,8 @@ function InvoicesPage() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this draft invoice?")) return;
+    if (!confirm("Delete this invoice? This cannot be undone.")) return;
+    await cleanupMatchesForRecord("invoice", id);
     await supabase.from("invoice_line_items").delete().eq("invoice_id", id);
     const { error } = await supabase.from("invoices").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }

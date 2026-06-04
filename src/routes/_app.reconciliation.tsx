@@ -490,8 +490,34 @@ function MatchDialog({
   const isCredit = txn?.txn_type === "credit";
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [saving, setSaving] = React.useState(false);
+  const [addingExpense, setAddingExpense] = React.useState(false);
 
-  React.useEffect(() => { setSelected(new Set()); }, [txn?.id]);
+  React.useEffect(() => { setSelected(new Set()); setAddingExpense(false); }, [txn?.id]);
+
+  const onNewExpenseSaved = async (newId: string) => {
+    if (!txn) return;
+    try {
+      const bankRef = txn.description || null;
+      const { error: insErr } = await supabase.from("reconciliation_matches").insert({
+        bank_txn_id: txn.id, record_type: "expense", record_id: newId, bank_reference: bankRef,
+      });
+      if (insErr) throw insErr;
+      const { error: recErr } = await supabase
+        .from("expenses")
+        .update({ reconciled_at: new Date().toISOString() })
+        .eq("id", newId);
+      if (recErr) throw recErr;
+      const { error: updErr } = await supabase
+        .from("bank_transactions")
+        .update({ match_status: "matched" })
+        .eq("id", txn.id);
+      if (updErr) throw updErr;
+      toast.success("Matched to new expense");
+      onMatched();
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to auto-match new expense");
+    }
+  };
 
   const { data: candidates = [], isLoading } = useQuery({
     queryKey: ["match_candidates", txn?.id, isCredit],

@@ -40,7 +40,7 @@ type Candidate = {
   type: "invoice" | "bill" | "expense";
   label: string;       // e.g. INV-1003 / bill_number / expense vendor name
   sub: string;         // client/vendor
-  paid: boolean;
+  paid?: boolean;
   date: string;
   amount: number;
 };

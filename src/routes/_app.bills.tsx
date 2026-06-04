@@ -90,7 +90,8 @@ function BillsPage() {
 
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this bill?")) return;
+    if (!confirm("Delete this bill? This cannot be undone.")) return;
+    await cleanupMatchesForRecord("bill", id);
     await supabase.from("bill_line_items").delete().eq("bill_id", id);
     const { error } = await supabase.from("bills").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }

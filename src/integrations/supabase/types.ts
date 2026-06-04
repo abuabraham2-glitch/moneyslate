@@ -142,6 +142,7 @@ export type Database = {
           notes: string | null
           payment_method: string | null
           payment_notes: string | null
+          reconciled_at: string | null
           status: Database["public"]["Enums"]["bill_status"]
           total: number
           updated_at: string
@@ -158,6 +159,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           payment_notes?: string | null
+          reconciled_at?: string | null
           status?: Database["public"]["Enums"]["bill_status"]
           total?: number
           updated_at?: string
@@ -174,6 +176,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           payment_notes?: string | null
+          reconciled_at?: string | null
           status?: Database["public"]["Enums"]["bill_status"]
           total?: number
           updated_at?: string
@@ -317,6 +320,7 @@ export type Database = {
           notes: string | null
           payment_method: string | null
           receipt_url: string | null
+          reconciled_at: string | null
           updated_at: string
           vendor_name: string | null
         }
@@ -329,6 +333,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           receipt_url?: string | null
+          reconciled_at?: string | null
           updated_at?: string
           vendor_name?: string | null
         }
@@ -341,6 +346,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           receipt_url?: string | null
+          reconciled_at?: string | null
           updated_at?: string
           vendor_name?: string | null
         }
@@ -411,6 +417,7 @@ export type Database = {
           payment_method: string | null
           payment_notes: string | null
           payment_terms: string | null
+          reconciled_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
           tax_amount: number
@@ -432,6 +439,7 @@ export type Database = {
           payment_method?: string | null
           payment_notes?: string | null
           payment_terms?: string | null
+          reconciled_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
@@ -453,6 +461,7 @@ export type Database = {
           payment_method?: string | null
           payment_notes?: string | null
           payment_terms?: string | null
+          reconciled_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
           tax_amount?: number
@@ -625,6 +634,7 @@ export type Database = {
       }
       reconciliation_matches: {
         Row: {
+          bank_reference: string | null
           bank_txn_id: string
           created_at: string
           id: string
@@ -632,6 +642,7 @@ export type Database = {
           record_type: string
         }
         Insert: {
+          bank_reference?: string | null
           bank_txn_id: string
           created_at?: string
           id?: string
@@ -639,6 +650,7 @@ export type Database = {
           record_type: string
         }
         Update: {
+          bank_reference?: string | null
           bank_txn_id?: string
           created_at?: string
           id?: string

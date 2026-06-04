@@ -13,9 +13,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Upload, Undo2 } from "lucide-react";
+import { Upload, Undo2, Plus } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ExpenseDialog } from "@/components/expense-dialog";
 
 export const Route = createFileRoute("/_app/reconciliation")({ component: ReconciliationPage });
 

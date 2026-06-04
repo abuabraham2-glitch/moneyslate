@@ -62,7 +62,8 @@ function ExpensesPage() {
   }, [data, search, sortKey, sortDir]);
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this expense?")) return;
+    if (!confirm("Delete this expense? This cannot be undone.")) return;
+    await cleanupMatchesForRecord("expense", id);
     const { error } = await supabase.from("expenses").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["expenses"] });

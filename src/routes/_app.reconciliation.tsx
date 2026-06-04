@@ -568,7 +568,7 @@ function MatchDialog({
             <div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>
           ) : candidates.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              No {isCredit ? "open invoices" : "open bills or expenses"} found.
+              No unreconciled {isCredit ? "invoices" : "bills or expenses"} found.
             </div>
           ) : (
             <ul className="divide-y divide-border">

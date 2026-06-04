@@ -629,7 +629,9 @@ function MatchDialog({
 
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Match bank transaction</DialogTitle>

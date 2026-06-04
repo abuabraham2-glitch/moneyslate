@@ -13,6 +13,7 @@ import {
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ExpenseDialog } from "@/components/expense-dialog";
 import { toast } from "sonner";
+import { cleanupMatchesForRecord } from "@/lib/reconciliation-cleanup";
 
 export const Route = createFileRoute("/_app/expenses")({ component: ExpensesPage });
 

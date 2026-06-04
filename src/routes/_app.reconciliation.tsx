@@ -747,20 +747,21 @@ function MatchDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
-
-      {txn && !isCredit && (
-        <ExpenseDialog
-          open={addingExpense}
-          onOpenChange={setAddingExpense}
-          prefill={{
-            expense_date: txn.txn_date,
-            amount: Number(txn.amount),
-            vendor_name: txn.description || "",
-            notes: txn.description || "",
-          }}
-          onSaved={onNewExpenseSaved}
-        />
-      )}
     </Dialog>
+
+    {txn && !isCredit && (
+      <ExpenseDialog
+        open={addingExpense}
+        onOpenChange={setAddingExpense}
+        prefill={{
+          expense_date: txn.txn_date,
+          amount: Number(txn.amount),
+          vendor_name: txn.description || "",
+          notes: txn.description || "",
+        }}
+        onSaved={onNewExpenseSaved}
+      />
+    )}
+    </>
   );
 }

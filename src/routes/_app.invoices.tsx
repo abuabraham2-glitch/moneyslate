@@ -76,6 +76,18 @@ function InvoicesPage() {
     toast.success("Marked paid");
   };
 
+  const markUnpaid = async (id: string) => {
+    const { error } = await supabase
+      .from("invoices")
+      .update({ status: "sent", date_paid: null, payment_method: null, payment_notes: null })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    await logActivity("updated", "invoice", id, "Marked invoice unpaid");
+    qc.invalidateQueries({ queryKey: ["invoices"] });
+    toast.success("Marked unpaid");
+  };
+
+
   const downloadPdf = async (id: string) => {
     const { data: inv } = await supabase.from("invoices").select("*, client:clients(*)").eq("id", id).single();
     const { data: lines } = await supabase.from("invoice_line_items").select("*").eq("invoice_id", id).order("sort_order");

@@ -724,6 +724,20 @@ function MatchDialog({
           )}
         </div>
 
+        {!isCredit && (
+          <div className="border-t border-border pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setAddingExpense(true)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add as new expense
+            </Button>
+          </div>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={confirm} disabled={saving || selected.size === 0}>
@@ -731,6 +745,20 @@ function MatchDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {txn && !isCredit && (
+        <ExpenseDialog
+          open={addingExpense}
+          onOpenChange={setAddingExpense}
+          prefill={{
+            expense_date: txn.txn_date,
+            amount: Number(txn.amount),
+            vendor_name: txn.description || "",
+            notes: txn.description || "",
+          }}
+          onSaved={onNewExpenseSaved}
+        />
+      )}
     </Dialog>
   );
 }

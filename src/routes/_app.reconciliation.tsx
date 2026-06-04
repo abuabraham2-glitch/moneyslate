@@ -596,16 +596,19 @@ function MatchDialog({
                               {c.type}
                             </span>
                           )}
-                          <span
-                            className={cn(
-                              "text-[10px] uppercase tracking-wide rounded px-1.5 py-0.5 border",
-                              c.paid
-                                ? "bg-success/15 text-success border-success/30"
-                                : "bg-warning/15 text-warning border-warning/30",
-                            )}
-                          >
-                            {c.paid ? "paid" : "unpaid"}
-                          </span>
+                          {c.paid !== undefined && (
+                            <span
+                              className={cn(
+                                "text-[10px] uppercase tracking-wide rounded px-1.5 py-0.5 border",
+                                c.paid
+                                  ? "bg-success/15 text-success border-success/30"
+                                  : "bg-warning/15 text-warning border-warning/30",
+                              )}
+                            >
+                              {c.paid ? "paid" : "unpaid"}
+                            </span>
+                          )}
+
                         </div>
 
                         <div className="text-xs text-muted-foreground truncate">

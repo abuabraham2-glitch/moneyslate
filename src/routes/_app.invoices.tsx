@@ -17,6 +17,7 @@ import { MemoCell } from "@/components/memo-cell";
 import { MarkPaidDialog } from "@/components/mark-paid-dialog";
 import { generatePDF } from "@/lib/pdf";
 import { logActivity } from "@/lib/activity";
+import { cleanupMatchesForRecord } from "@/lib/reconciliation-cleanup";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/invoices")({ component: InvoicesPage });
@@ -131,7 +132,8 @@ function InvoicesPage() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this draft invoice?")) return;
+    if (!confirm("Delete this invoice? This cannot be undone.")) return;
+    await cleanupMatchesForRecord("invoice", id);
     await supabase.from("invoice_line_items").delete().eq("invoice_id", id);
     const { error } = await supabase.from("invoices").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
@@ -194,10 +196,8 @@ function InvoicesPage() {
 
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => duplicate(r.id)}>Duplicate</DropdownMenuItem>
-                        {r.status === "draft" && <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive" onClick={() => remove(r.id)}>Delete</DropdownMenuItem>
-                        </>}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive" onClick={() => remove(r.id)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </Td>

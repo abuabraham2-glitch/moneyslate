@@ -200,10 +200,8 @@ function POPage() {
                         {r.status === "sent" && <DropdownMenuItem onClick={() => convertToBill(r.id)}>Convert to Bill</DropdownMenuItem>}
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => duplicate(r.id)}>Duplicate</DropdownMenuItem>
-                        {(r.status === "draft" || r.status === "sent") && <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive" onClick={() => remove(r.id)}>Delete</DropdownMenuItem>
-                        </>}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive" onClick={() => remove(r.id)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </Td>

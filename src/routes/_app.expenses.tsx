@@ -13,6 +13,7 @@ import {
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ExpenseDialog } from "@/components/expense-dialog";
 import { toast } from "sonner";
+import { cleanupMatchesForRecord } from "@/lib/reconciliation-cleanup";
 
 export const Route = createFileRoute("/_app/expenses")({ component: ExpensesPage });
 
@@ -61,7 +62,8 @@ function ExpensesPage() {
   }, [data, search, sortKey, sortDir]);
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this expense?")) return;
+    if (!confirm("Delete this expense? This cannot be undone.")) return;
+    await cleanupMatchesForRecord("expense", id);
     const { error } = await supabase.from("expenses").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["expenses"] });

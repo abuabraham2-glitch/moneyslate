@@ -164,6 +164,8 @@ function BillsPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => edit(r.id)}>Edit</DropdownMenuItem>
                         {r.status !== "paid" && <DropdownMenuItem onClick={() => setPayingId(r.id)}>Mark Paid</DropdownMenuItem>}
+                        {r.status === "paid" && <DropdownMenuItem onClick={() => markUnpaid(r.id)}>Mark Unpaid</DropdownMenuItem>}
+
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive" onClick={() => remove(r.id)}>Delete</DropdownMenuItem>

@@ -40,6 +40,7 @@ type Candidate = {
   type: "invoice" | "bill" | "expense";
   label: string;       // e.g. INV-1003 / bill_number / expense vendor name
   sub: string;         // client/vendor
+  paid?: boolean;
   date: string;
   amount: number;
 };
@@ -237,11 +238,33 @@ function ReconciliationPage() {
   };
 
   const undo = async (txn: BankTxn) => {
+    // Fetch the linked records first so we know which to un-reconcile.
+    const { data: links, error: linkErr } = await supabase
+      .from("reconciliation_matches")
+      .select("record_type, record_id")
+      .eq("bank_txn_id", txn.id);
+    if (linkErr) { toast.error(linkErr.message); return; }
+
     const { error: delErr } = await supabase
       .from("reconciliation_matches")
       .delete()
       .eq("bank_txn_id", txn.id);
     if (delErr) { toast.error(delErr.message); return; }
+
+    // Clear reconciled_at on every record that was linked (paid status untouched).
+    const byType: Record<string, string[]> = { invoice: [], bill: [], expense: [] };
+    for (const l of links || []) byType[l.record_type]?.push(l.record_id);
+    const tableFor = { invoice: "invoices", bill: "bills", expense: "expenses" } as const;
+    for (const t of ["invoice", "bill", "expense"] as const) {
+      if (byType[t].length) {
+        const { error } = await supabase
+          .from(tableFor[t])
+          .update({ reconciled_at: null })
+          .in("id", byType[t]);
+        if (error) { toast.error(error.message); return; }
+      }
+    }
+
     const { error } = await supabase
       .from("bank_transactions")
       .update({ match_status: "unmatched", matched_to_type: null, matched_to_id: null })
@@ -250,6 +273,7 @@ function ReconciliationPage() {
     toast.success("Reverted to unmatched");
     invalidateAll();
   };
+
 
   return (
     <PageContainer>
@@ -403,7 +427,7 @@ function MatchDialog({
         const { data, error } = await supabase
           .from("invoices")
           .select("id, invoice_number, issue_date, total, status, client:clients(company_name)")
-          .neq("status", "paid")
+          .is("reconciled_at", null)
           .order("issue_date", { ascending: false });
         if (error) throw error;
         return (data || []).map((r: any) => ({
@@ -411,6 +435,7 @@ function MatchDialog({
           type: "invoice",
           label: r.invoice_number,
           sub: r.client?.company_name || "—",
+          paid: r.status === "paid",
           date: r.issue_date,
           amount: Number(r.total),
         }));
@@ -419,25 +444,29 @@ function MatchDialog({
           supabase
             .from("bills")
             .select("id, bill_number, bill_date, total, status, vendor:vendors(company_name)")
-            .neq("status", "paid")
+            .is("reconciled_at", null)
             .order("bill_date", { ascending: false }),
           supabase
             .from("expenses")
             .select("id, vendor_name, expense_date, amount")
+            .is("reconciled_at", null)
             .order("expense_date", { ascending: false }),
         ]);
         if (bills.error) throw bills.error;
         if (expenses.error) throw expenses.error;
         const b: Candidate[] = (bills.data || []).map((r: any) => ({
           id: r.id, type: "bill", label: r.bill_number,
-          sub: r.vendor?.company_name || "—", date: r.bill_date, amount: Number(r.total),
+          sub: r.vendor?.company_name || "—", paid: r.status === "paid",
+          date: r.bill_date, amount: Number(r.total),
         }));
         const e: Candidate[] = (expenses.data || []).map((r: any) => ({
           id: r.id, type: "expense", label: r.vendor_name || "Expense",
-          sub: "Expense", date: r.expense_date, amount: Number(r.amount),
+          sub: "Expense",
+          date: r.expense_date, amount: Number(r.amount),
         }));
         return [...b, ...e].sort((a, z) => z.date.localeCompare(a.date));
       }
+
     },
     enabled: open,
   });
@@ -458,11 +487,32 @@ function MatchDialog({
     if (!txn || selected.size === 0) return;
     setSaving(true);
     try {
-      const rows = candidates
-        .filter((c) => selected.has(`${c.type}:${c.id}`))
-        .map((c) => ({ bank_txn_id: txn.id, record_type: c.type, record_id: c.id }));
+      const bankRef = txn.description || null;
+      const chosen = candidates.filter((c) => selected.has(`${c.type}:${c.id}`));
+      const rows = chosen.map((c) => ({
+        bank_txn_id: txn.id,
+        record_type: c.type,
+        record_id: c.id,
+        bank_reference: bankRef,
+      }));
       const { error: insErr } = await supabase.from("reconciliation_matches").insert(rows);
       if (insErr) throw insErr;
+
+      // Stamp reconciled_at on each linked record (grouped by table).
+      const nowIso = new Date().toISOString();
+      const byType: Record<string, string[]> = { invoice: [], bill: [], expense: [] };
+      for (const c of chosen) byType[c.type].push(c.id);
+      const tableFor = { invoice: "invoices", bill: "bills", expense: "expenses" } as const;
+      for (const t of ["invoice", "bill", "expense"] as const) {
+        if (byType[t].length) {
+          const { error } = await supabase
+            .from(tableFor[t])
+            .update({ reconciled_at: nowIso })
+            .in("id", byType[t]);
+          if (error) throw error;
+        }
+      }
+
       const { error: updErr } = await supabase
         .from("bank_transactions")
         .update({ match_status: "matched" })
@@ -476,6 +526,7 @@ function MatchDialog({
       setSaving(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -517,7 +568,7 @@ function MatchDialog({
             <div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>
           ) : candidates.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              No {isCredit ? "open invoices" : "open bills or expenses"} found.
+              No unreconciled {isCredit ? "invoices" : "bills or expenses"} found.
             </div>
           ) : (
             <ul className="divide-y divide-border">
@@ -545,7 +596,21 @@ function MatchDialog({
                               {c.type}
                             </span>
                           )}
+                          {c.paid !== undefined && (
+                            <span
+                              className={cn(
+                                "text-[10px] uppercase tracking-wide rounded px-1.5 py-0.5 border",
+                                c.paid
+                                  ? "bg-success/15 text-success border-success/30"
+                                  : "bg-warning/15 text-warning border-warning/30",
+                              )}
+                            >
+                              {c.paid ? "paid" : "unpaid"}
+                            </span>
+                          )}
+
                         </div>
+
                         <div className="text-xs text-muted-foreground truncate">
                           {c.sub} · {formatDate(c.date)}
                         </div>

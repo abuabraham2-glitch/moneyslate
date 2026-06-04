@@ -76,6 +76,18 @@ function InvoicesPage() {
     toast.success("Marked paid");
   };
 
+  const markUnpaid = async (id: string) => {
+    const { error } = await supabase
+      .from("invoices")
+      .update({ status: "sent", date_paid: null, payment_method: null, payment_notes: null })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    await logActivity("updated", "invoice", id, "Marked invoice unpaid");
+    qc.invalidateQueries({ queryKey: ["invoices"] });
+    toast.success("Marked unpaid");
+  };
+
+
   const downloadPdf = async (id: string) => {
     const { data: inv } = await supabase.from("invoices").select("*, client:clients(*)").eq("id", id).single();
     const { data: lines } = await supabase.from("invoice_line_items").select("*").eq("invoice_id", id).order("sort_order");
@@ -178,6 +190,8 @@ function InvoicesPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => editInvoice(r.id)}>Edit</DropdownMenuItem>
                         {r.status !== "paid" && <DropdownMenuItem onClick={() => setPayingId(r.id)}>Mark Paid</DropdownMenuItem>}
+                        {r.status === "paid" && <DropdownMenuItem onClick={() => markUnpaid(r.id)}>Mark Unpaid</DropdownMenuItem>}
+
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => duplicate(r.id)}>Duplicate</DropdownMenuItem>
                         {r.status === "draft" && <>

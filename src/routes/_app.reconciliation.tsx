@@ -95,6 +95,9 @@ function ReconciliationPage() {
   const fileRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
   const [matchTxn, setMatchTxn] = React.useState<BankTxn | null>(null);
+  const [overlapPrompt, setOverlapPrompt] = React.useState<{
+    filename: string; overlap: number; total: number; resolve: (proceed: boolean) => void;
+  } | null>(null);
 
   const { data: txns = [], isLoading } = useQuery({
     queryKey: ["bank_transactions"],

@@ -13,9 +13,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Upload, Undo2 } from "lucide-react";
+import { Upload, Undo2, Plus } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ExpenseDialog } from "@/components/expense-dialog";
 
 export const Route = createFileRoute("/_app/reconciliation")({ component: ReconciliationPage });
 
@@ -94,6 +95,9 @@ function ReconciliationPage() {
   const fileRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
   const [matchTxn, setMatchTxn] = React.useState<BankTxn | null>(null);
+  const [overlapPrompt, setOverlapPrompt] = React.useState<{
+    filename: string; overlap: number; total: number; resolve: (proceed: boolean) => void;
+  } | null>(null);
 
   const { data: txns = [], isLoading } = useQuery({
     queryKey: ["bank_transactions"],
@@ -167,55 +171,103 @@ function ReconciliationPage() {
     return { u, m, i };
   }, [txns]);
 
-  const handleFile = async (file: File) => {
-    setUploading(true);
-    try {
-      const text = await file.text();
-      const rows = parseCSV(text).filter((r) => r.some((c) => c && c.trim() !== ""));
-      if (rows.length < 2) throw new Error("CSV has no data rows");
-      const header = rows[0].map((h) => h.trim().toLowerCase());
-      const idx = (name: string) => header.indexOf(name.toLowerCase());
-      const iDate = idx("Date");
-      const iPayee = idx("Payee");
-      const iType = idx("Transaction Type");
-      const iRef = idx("Reference");
-      const iAmount = idx("Amount");
-      if (iDate < 0 || iAmount < 0) throw new Error("Missing required Date or Amount column");
+  const parseFileToInserts = async (file: File): Promise<any[]> => {
+    const text = await file.text();
+    const rows = parseCSV(text).filter((r) => r.some((c) => c && c.trim() !== ""));
+    if (rows.length < 2) throw new Error(`${file.name}: CSV has no data rows`);
+    const header = rows[0].map((h) => h.trim().toLowerCase());
+    const idx = (name: string) => header.indexOf(name.toLowerCase());
+    const iDate = idx("Date");
+    const iPayee = idx("Payee");
+    const iType = idx("Transaction Type");
+    const iRef = idx("Reference");
+    const iAmount = idx("Amount");
+    if (iDate < 0 || iAmount < 0) throw new Error(`${file.name}: Missing Date or Amount column`);
 
-      const batchId = crypto.randomUUID();
-      const inserts: any[] = [];
-      for (let r = 1; r < rows.length; r++) {
-        const row = rows[r];
-        const dateRaw = row[iDate]?.trim();
-        const amtRaw = row[iAmount]?.trim();
-        if (!dateRaw || !amtRaw) continue;
-        const txn_date = parseDateMDY(dateRaw);
-        const amt = parseAmount(amtRaw);
-        if (!txn_date || amt === null) continue;
-        const payee = iPayee >= 0 ? (row[iPayee] || "").trim() : "";
-        const ref = iRef >= 0 ? (row[iRef] || "").trim() : "";
-        const description = ref ? (payee ? `${payee} — ${ref}` : ref) : payee || null;
-        const ttRaw = iType >= 0 ? (row[iType] || "").trim().toLowerCase() : "";
-        let txn_type: "credit" | "debit";
-        if (ttRaw === "receive") txn_type = "credit";
-        else if (ttRaw === "spend") txn_type = "debit";
-        else txn_type = amt >= 0 ? "credit" : "debit";
-        inserts.push({
-          txn_date,
-          description,
-          amount: Math.abs(amt),
-          txn_type,
-          match_status: "unmatched",
-          imported_batch_id: batchId,
-        });
+    const batchId = crypto.randomUUID();
+    const inserts: any[] = [];
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      const dateRaw = row[iDate]?.trim();
+      const amtRaw = row[iAmount]?.trim();
+      if (!dateRaw || !amtRaw) continue;
+      const txn_date = parseDateMDY(dateRaw);
+      const amt = parseAmount(amtRaw);
+      if (!txn_date || amt === null) continue;
+      const payee = iPayee >= 0 ? (row[iPayee] || "").trim() : "";
+      const ref = iRef >= 0 ? (row[iRef] || "").trim() : "";
+      const description = ref ? (payee ? `${payee} — ${ref}` : ref) : payee || null;
+      const ttRaw = iType >= 0 ? (row[iType] || "").trim().toLowerCase() : "";
+      let txn_type: "credit" | "debit";
+      if (ttRaw === "receive") txn_type = "credit";
+      else if (ttRaw === "spend") txn_type = "debit";
+      else txn_type = amt >= 0 ? "credit" : "debit";
+      inserts.push({
+        txn_date,
+        description,
+        amount: Math.abs(amt),
+        txn_type,
+        match_status: "unmatched",
+        imported_batch_id: batchId,
+      });
+    }
+    return inserts;
+  };
+
+  const checkOverlap = async (inserts: any[]): Promise<{ overlap: number; total: number }> => {
+    const total = inserts.length;
+    if (!total) return { overlap: 0, total: 0 };
+    const dates = Array.from(new Set(inserts.map((r) => r.txn_date)));
+    const { data } = await supabase
+      .from("bank_transactions")
+      .select("txn_date, amount, description")
+      .in("txn_date", dates);
+    const existing = new Set(
+      (data || []).map((r: any) => `${r.txn_date}|${Number(r.amount).toFixed(2)}|${r.description || ""}`),
+    );
+    let overlap = 0;
+    for (const r of inserts) {
+      const k = `${r.txn_date}|${Number(r.amount).toFixed(2)}|${r.description || ""}`;
+      if (existing.has(k)) overlap++;
+    }
+    return { overlap, total };
+  };
+
+  const handleFiles = async (files: FileList) => {
+    setUploading(true);
+    let totalImported = 0;
+    let skipped = 0;
+    try {
+      for (const file of Array.from(files)) {
+        let inserts: any[] = [];
+        try {
+          inserts = await parseFileToInserts(file);
+        } catch (err: any) {
+          toast.error(err?.message || `Failed to parse ${file.name}`);
+          continue;
+        }
+        if (!inserts.length) {
+          toast.error(`${file.name}: no valid rows`);
+          continue;
+        }
+        const { overlap, total } = await checkOverlap(inserts);
+        if (total > 0 && overlap / total >= 0.5) {
+          const proceed = await new Promise<boolean>((resolve) => {
+            setOverlapPrompt({ filename: file.name, overlap, total, resolve });
+          });
+          setOverlapPrompt(null);
+          if (!proceed) { skipped++; continue; }
+        }
+        const { error } = await supabase.from("bank_transactions").insert(inserts);
+        if (error) { toast.error(`${file.name}: ${error.message}`); continue; }
+        totalImported += inserts.length;
       }
-      if (!inserts.length) throw new Error("No valid rows found");
-      const { error } = await supabase.from("bank_transactions").insert(inserts);
-      if (error) throw error;
-      toast.success(`Imported ${inserts.length} transaction${inserts.length === 1 ? "" : "s"}`);
+      if (totalImported > 0) {
+        toast.success(`Imported ${totalImported} transaction${totalImported === 1 ? "" : "s"} across ${files.length} file${files.length === 1 ? "" : "s"}`);
+      } else if (skipped === 0) {
+        toast.error("No transactions imported");
+      }
       qc.invalidateQueries({ queryKey: ["bank_transactions"] });
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to parse CSV");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -286,8 +338,9 @@ function ReconciliationPage() {
               ref={fileRef}
               type="file"
               accept=".csv,text/csv"
+              multiple
               className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              onChange={(e) => { const fs = e.target.files; if (fs && fs.length) handleFiles(fs); }}
             />
             <Button onClick={() => fileRef.current?.click()} disabled={uploading}>
               <Upload className="h-4 w-4 mr-2" />
@@ -401,6 +454,27 @@ function ReconciliationPage() {
         onClose={() => setMatchTxn(null)}
         onMatched={() => { setMatchTxn(null); invalidateAll(); }}
       />
+
+      <Dialog open={!!overlapPrompt} onOpenChange={(v) => { if (!v && overlapPrompt) { overlapPrompt.resolve(false); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Possible duplicate import</DialogTitle>
+            <DialogDescription>
+              {overlapPrompt && (
+                <>
+                  <span className="font-medium">{overlapPrompt.filename}</span> looks like it may
+                  already have been imported ({overlapPrompt.overlap} of {overlapPrompt.total} rows
+                  match existing transactions). Import anyway?
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => overlapPrompt?.resolve(false)}>Cancel</Button>
+            <Button onClick={() => overlapPrompt?.resolve(true)}>Proceed</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }
@@ -416,8 +490,34 @@ function MatchDialog({
   const isCredit = txn?.txn_type === "credit";
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [saving, setSaving] = React.useState(false);
+  const [addingExpense, setAddingExpense] = React.useState(false);
 
-  React.useEffect(() => { setSelected(new Set()); }, [txn?.id]);
+  React.useEffect(() => { setSelected(new Set()); setAddingExpense(false); }, [txn?.id]);
+
+  const onNewExpenseSaved = async (newId: string) => {
+    if (!txn) return;
+    try {
+      const bankRef = txn.description || null;
+      const { error: insErr } = await supabase.from("reconciliation_matches").insert({
+        bank_txn_id: txn.id, record_type: "expense", record_id: newId, bank_reference: bankRef,
+      });
+      if (insErr) throw insErr;
+      const { error: recErr } = await supabase
+        .from("expenses")
+        .update({ reconciled_at: new Date().toISOString() })
+        .eq("id", newId);
+      if (recErr) throw recErr;
+      const { error: updErr } = await supabase
+        .from("bank_transactions")
+        .update({ match_status: "matched" })
+        .eq("id", txn.id);
+      if (updErr) throw updErr;
+      toast.success("Matched to new expense");
+      onMatched();
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to auto-match new expense");
+    }
+  };
 
   const { data: candidates = [], isLoading } = useQuery({
     queryKey: ["match_candidates", txn?.id, isCredit],
@@ -529,7 +629,9 @@ function MatchDialog({
 
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Match bank transaction</DialogTitle>
@@ -624,6 +726,20 @@ function MatchDialog({
           )}
         </div>
 
+        {!isCredit && (
+          <div className="border-t border-border pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setAddingExpense(true)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add as new expense
+            </Button>
+          </div>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={confirm} disabled={saving || selected.size === 0}>
@@ -632,5 +748,20 @@ function MatchDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {txn && !isCredit && (
+      <ExpenseDialog
+        open={addingExpense}
+        onOpenChange={setAddingExpense}
+        prefill={{
+          expense_date: txn.txn_date,
+          amount: Number(txn.amount),
+          vendor_name: txn.description || "",
+          notes: txn.description || "",
+        }}
+        onSaved={onNewExpenseSaved}
+      />
+    )}
+    </>
   );
 }

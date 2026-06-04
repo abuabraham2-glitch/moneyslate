@@ -30,11 +30,13 @@ type ExpenseForm = {
 const PAYMENT_METHODS = ["Cash", "Check", "ACH", "Credit Card", "Other"];
 
 export function ExpenseDialog({
-  open, onOpenChange, expenseId,
+  open, onOpenChange, expenseId, prefill, onSaved,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   expenseId?: string | null;
+  prefill?: Partial<ExpenseForm>;
+  onSaved?: (id: string) => void;
 }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
@@ -70,7 +72,7 @@ export function ExpenseDialog({
           setBaseline(JSON.stringify(f));
         }
       } else {
-        const f = { ...blank, expense_date: today };
+        const f = { ...blank, expense_date: today, ...(prefill || {}) };
         setForm(f);
         setBaseline(JSON.stringify(f));
       }
@@ -128,6 +130,7 @@ export function ExpenseDialog({
       qc.invalidateQueries({ queryKey: ["expenses"] });
       toast.success("Expense saved");
       setBaseline(JSON.stringify(form));
+      onSaved?.(id!);
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);

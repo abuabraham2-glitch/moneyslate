@@ -238,11 +238,33 @@ function ReconciliationPage() {
   };
 
   const undo = async (txn: BankTxn) => {
+    // Fetch the linked records first so we know which to un-reconcile.
+    const { data: links, error: linkErr } = await supabase
+      .from("reconciliation_matches")
+      .select("record_type, record_id")
+      .eq("bank_txn_id", txn.id);
+    if (linkErr) { toast.error(linkErr.message); return; }
+
     const { error: delErr } = await supabase
       .from("reconciliation_matches")
       .delete()
       .eq("bank_txn_id", txn.id);
     if (delErr) { toast.error(delErr.message); return; }
+
+    // Clear reconciled_at on every record that was linked (paid status untouched).
+    const byType: Record<string, string[]> = { invoice: [], bill: [], expense: [] };
+    for (const l of links || []) byType[l.record_type]?.push(l.record_id);
+    const tableFor = { invoice: "invoices", bill: "bills", expense: "expenses" } as const;
+    for (const t of ["invoice", "bill", "expense"] as const) {
+      if (byType[t].length) {
+        const { error } = await supabase
+          .from(tableFor[t])
+          .update({ reconciled_at: null })
+          .in("id", byType[t]);
+        if (error) { toast.error(error.message); return; }
+      }
+    }
+
     const { error } = await supabase
       .from("bank_transactions")
       .update({ match_status: "unmatched", matched_to_type: null, matched_to_id: null })
@@ -251,6 +273,7 @@ function ReconciliationPage() {
     toast.success("Reverted to unmatched");
     invalidateAll();
   };
+
 
   return (
     <PageContainer>

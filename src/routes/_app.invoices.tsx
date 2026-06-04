@@ -190,6 +190,8 @@ function InvoicesPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => editInvoice(r.id)}>Edit</DropdownMenuItem>
                         {r.status !== "paid" && <DropdownMenuItem onClick={() => setPayingId(r.id)}>Mark Paid</DropdownMenuItem>}
+                        {r.status === "paid" && <DropdownMenuItem onClick={() => markUnpaid(r.id)}>Mark Unpaid</DropdownMenuItem>}
+
                         <DropdownMenuItem onClick={() => downloadPdf(r.id)}>Download PDF</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => duplicate(r.id)}>Duplicate</DropdownMenuItem>
                         {r.status === "draft" && <>

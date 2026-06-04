@@ -76,6 +76,18 @@ function BillsPage() {
     toast.success("Marked paid");
   };
 
+  const markUnpaid = async (id: string) => {
+    const { error } = await supabase
+      .from("bills")
+      .update({ status: "unpaid", date_paid: null, payment_method: null, payment_notes: null })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    await logActivity("updated", "bill", id, "Marked bill unpaid");
+    qc.invalidateQueries({ queryKey: ["bills"] });
+    toast.success("Marked unpaid");
+  };
+
+
   const remove = async (id: string) => {
     if (!confirm("Delete this bill?")) return;
     await supabase.from("bill_line_items").delete().eq("bill_id", id);

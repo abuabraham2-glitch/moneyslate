@@ -404,7 +404,7 @@ function MatchDialog({
         const { data, error } = await supabase
           .from("invoices")
           .select("id, invoice_number, issue_date, total, status, client:clients(company_name)")
-          .neq("status", "paid")
+          .is("reconciled_at", null)
           .order("issue_date", { ascending: false });
         if (error) throw error;
         return (data || []).map((r: any) => ({
@@ -412,6 +412,7 @@ function MatchDialog({
           type: "invoice",
           label: r.invoice_number,
           sub: r.client?.company_name || "—",
+          paid: r.status === "paid",
           date: r.issue_date,
           amount: Number(r.total),
         }));
@@ -420,25 +421,29 @@ function MatchDialog({
           supabase
             .from("bills")
             .select("id, bill_number, bill_date, total, status, vendor:vendors(company_name)")
-            .neq("status", "paid")
+            .is("reconciled_at", null)
             .order("bill_date", { ascending: false }),
           supabase
             .from("expenses")
             .select("id, vendor_name, expense_date, amount")
+            .is("reconciled_at", null)
             .order("expense_date", { ascending: false }),
         ]);
         if (bills.error) throw bills.error;
         if (expenses.error) throw expenses.error;
         const b: Candidate[] = (bills.data || []).map((r: any) => ({
           id: r.id, type: "bill", label: r.bill_number,
-          sub: r.vendor?.company_name || "—", date: r.bill_date, amount: Number(r.total),
+          sub: r.vendor?.company_name || "—", paid: r.status === "paid",
+          date: r.bill_date, amount: Number(r.total),
         }));
         const e: Candidate[] = (expenses.data || []).map((r: any) => ({
           id: r.id, type: "expense", label: r.vendor_name || "Expense",
-          sub: "Expense", date: r.expense_date, amount: Number(r.amount),
+          sub: "Expense", paid: false,
+          date: r.expense_date, amount: Number(r.amount),
         }));
         return [...b, ...e].sort((a, z) => z.date.localeCompare(a.date));
       }
+
     },
     enabled: open,
   });

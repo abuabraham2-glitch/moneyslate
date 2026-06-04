@@ -464,11 +464,32 @@ function MatchDialog({
     if (!txn || selected.size === 0) return;
     setSaving(true);
     try {
-      const rows = candidates
-        .filter((c) => selected.has(`${c.type}:${c.id}`))
-        .map((c) => ({ bank_txn_id: txn.id, record_type: c.type, record_id: c.id }));
+      const bankRef = txn.description || null;
+      const chosen = candidates.filter((c) => selected.has(`${c.type}:${c.id}`));
+      const rows = chosen.map((c) => ({
+        bank_txn_id: txn.id,
+        record_type: c.type,
+        record_id: c.id,
+        bank_reference: bankRef,
+      }));
       const { error: insErr } = await supabase.from("reconciliation_matches").insert(rows);
       if (insErr) throw insErr;
+
+      // Stamp reconciled_at on each linked record (grouped by table).
+      const nowIso = new Date().toISOString();
+      const byType: Record<string, string[]> = { invoice: [], bill: [], expense: [] };
+      for (const c of chosen) byType[c.type].push(c.id);
+      const tableFor = { invoice: "invoices", bill: "bills", expense: "expenses" } as const;
+      for (const t of ["invoice", "bill", "expense"] as const) {
+        if (byType[t].length) {
+          const { error } = await supabase
+            .from(tableFor[t])
+            .update({ reconciled_at: nowIso })
+            .in("id", byType[t]);
+          if (error) throw error;
+        }
+      }
+
       const { error: updErr } = await supabase
         .from("bank_transactions")
         .update({ match_status: "matched" })
@@ -482,6 +503,7 @@ function MatchDialog({
       setSaving(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>

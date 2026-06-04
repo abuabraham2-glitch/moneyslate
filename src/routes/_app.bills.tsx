@@ -16,6 +16,7 @@ import { BillDialog } from "@/components/bill-dialog";
 import { MarkPaidDialog } from "@/components/mark-paid-dialog";
 import { generatePDF } from "@/lib/pdf";
 import { logActivity } from "@/lib/activity";
+import { cleanupMatchesForRecord } from "@/lib/reconciliation-cleanup";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/bills")({ component: BillsPage });

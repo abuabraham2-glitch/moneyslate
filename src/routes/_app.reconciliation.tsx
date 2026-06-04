@@ -454,6 +454,27 @@ function ReconciliationPage() {
         onClose={() => setMatchTxn(null)}
         onMatched={() => { setMatchTxn(null); invalidateAll(); }}
       />
+
+      <Dialog open={!!overlapPrompt} onOpenChange={(v) => { if (!v && overlapPrompt) { overlapPrompt.resolve(false); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Possible duplicate import</DialogTitle>
+            <DialogDescription>
+              {overlapPrompt && (
+                <>
+                  <span className="font-medium">{overlapPrompt.filename}</span> looks like it may
+                  already have been imported ({overlapPrompt.overlap} of {overlapPrompt.total} rows
+                  match existing transactions). Import anyway?
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => overlapPrompt?.resolve(false)}>Cancel</Button>
+            <Button onClick={() => overlapPrompt?.resolve(true)}>Proceed</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

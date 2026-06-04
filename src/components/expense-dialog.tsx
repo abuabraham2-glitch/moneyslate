@@ -30,11 +30,13 @@ type ExpenseForm = {
 const PAYMENT_METHODS = ["Cash", "Check", "ACH", "Credit Card", "Other"];
 
 export function ExpenseDialog({
-  open, onOpenChange, expenseId,
+  open, onOpenChange, expenseId, prefill, onSaved,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   expenseId?: string | null;
+  prefill?: Partial<ExpenseForm>;
+  onSaved?: (id: string) => void;
 }) {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);

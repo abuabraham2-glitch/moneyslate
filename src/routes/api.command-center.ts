@@ -11,6 +11,78 @@ const cors = {
 const ok = (body: any, status = 200) => new Response(JSON.stringify(body), { status, headers: cors });
 const err = (msg: string, status = 400) => ok({ success: false, error: msg }, status);
 
+const STANDARD_PRODUCTS = ["Print", "Setup Charge", "Screen Change", "Film", "Screen"] as const;
+type StandardProduct = (typeof STANDARD_PRODUCTS)[number];
+
+const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+
+type BuiltLine = {
+  product_service_id: string;
+  description: string | null;
+  quantity: number;
+  rate: number;
+  line_total: number;
+  sort_order: number;
+};
+
+/**
+ * Build the 5 standard lines for an invoice or PO.
+ * - rateField: "default_price" for invoices, "default_cost" for POs.
+ * - For invoices, the Print line's rate is forced to 0 (caller fills in manually).
+ * Returns { lines } on success, or { error } if any product name is missing.
+ */
+async function buildStandardLines(opts: {
+  rateField: "default_price" | "default_cost";
+  orderQuantity: number;
+  numColors: number;
+  lineDescription: string | null;
+  forcePrintRateZero: boolean;
+}): Promise<{ lines?: BuiltLine[]; error?: string }> {
+  const { data: products, error: prodErr } = await supabaseAdmin
+    .from("products_services")
+    .select("id, name, default_price, default_cost")
+    .in("name", STANDARD_PRODUCTS as unknown as string[]);
+  if (prodErr) return { error: prodErr.message };
+
+  const byName = new Map<string, any>();
+  for (const p of products || []) byName.set(p.name, p);
+
+  for (const name of STANDARD_PRODUCTS) {
+    if (!byName.has(name)) {
+      return { error: `Product not found in Products & Services: ${name}` };
+    }
+  }
+
+  const printQty = Number.isFinite(opts.orderQuantity) && opts.orderQuantity > 0 ? opts.orderQuantity : 1;
+  const screenChangeQty = Math.max(0, opts.numColors - 1);
+
+  const qtyByName: Record<StandardProduct, number> = {
+    "Print": printQty,
+    "Setup Charge": 1,
+    "Screen Change": screenChangeQty,
+    "Film": 0,
+    "Screen": 0,
+  };
+
+  const lines: BuiltLine[] = STANDARD_PRODUCTS.map((name, i) => {
+    const p = byName.get(name);
+    let rate = Number(p[opts.rateField] ?? 0) || 0;
+    if (opts.forcePrintRateZero && name === "Print") rate = 0;
+    const quantity = qtyByName[name];
+    const line_total = round2(quantity * rate);
+    return {
+      product_service_id: p.id,
+      description: name === "Print" ? (opts.lineDescription ?? null) : null,
+      quantity,
+      rate,
+      line_total,
+      sort_order: i,
+    };
+  });
+
+  return { lines };
+}
+
 export const Route = createFileRoute("/api/command-center")({
   server: {
     handlers: {
@@ -67,11 +139,23 @@ export const Route = createFileRoute("/api/command-center")({
             const { data: client } = await supabaseAdmin.from("clients").select("id").eq("external_id", body.client_external_id).maybeSingle();
             if (!client) return err("Client not found", 404);
 
+            const orderQuantity = Number(body.order_quantity ?? 1) || 1;
+            const numColorsRaw = Number(body.num_colors);
+            const numColors = Number.isFinite(numColorsRaw) && numColorsRaw > 0 ? numColorsRaw : 1;
+
+            const built = await buildStandardLines({
+              rateField: "default_price",
+              orderQuantity,
+              numColors,
+              lineDescription: body.line_description ?? null,
+              forcePrintRateZero: true,
+            });
+            if (built.error || !built.lines) return err(built.error || "Failed to build line items", 500);
+
+            const subtotal = round2(built.lines.reduce((s, l) => s + l.line_total, 0));
+
             const { data: numRow } = await supabaseAdmin.rpc("get_next_invoice_number");
             const invoice_number = numRow as unknown as string;
-
-            const lines = (body.line_items || []) as any[];
-            const subtotal = lines.reduce((s, l) => s + Number(l.line_total ?? l.quantity * l.unit_price), 0);
 
             const { data: inv, error } = await supabaseAdmin.from("invoices").insert({
               invoice_number,
@@ -85,16 +169,19 @@ export const Route = createFileRoute("/api/command-center")({
             }).select().single();
             if (error) return err(error.message, 500);
 
-            if (lines.length) {
-              await supabaseAdmin.from("invoice_line_items").insert(lines.map((l, i) => ({
+            const { error: liErr } = await supabaseAdmin.from("invoice_line_items").insert(
+              built.lines.map((l) => ({
                 invoice_id: inv.id,
+                product_service_id: l.product_service_id,
                 description: l.description,
                 quantity: l.quantity,
-                unit_price: l.unit_price,
-                line_total: l.line_total ?? l.quantity * l.unit_price,
-                sort_order: i,
-              })));
-            }
+                unit_price: l.rate,
+                line_total: l.line_total,
+                sort_order: l.sort_order,
+              }))
+            );
+            if (liErr) return err(liErr.message, 500);
+
             return ok({ success: true, id: inv.id, invoice_number: inv.invoice_number });
           }
 
@@ -102,11 +189,23 @@ export const Route = createFileRoute("/api/command-center")({
             const { data: vendor } = await supabaseAdmin.from("vendors").select("id").eq("external_id", body.vendor_external_id).maybeSingle();
             if (!vendor) return err("Vendor not found", 404);
 
+            const orderQuantity = Number(body.order_quantity ?? 1) || 1;
+            const numColorsRaw = Number(body.num_colors);
+            const numColors = Number.isFinite(numColorsRaw) && numColorsRaw > 0 ? numColorsRaw : 1;
+
+            const built = await buildStandardLines({
+              rateField: "default_cost",
+              orderQuantity,
+              numColors,
+              lineDescription: body.line_description ?? null,
+              forcePrintRateZero: false,
+            });
+            if (built.error || !built.lines) return err(built.error || "Failed to build line items", 500);
+
+            const subtotal = round2(built.lines.reduce((s, l) => s + l.line_total, 0));
+
             const { data: numRow } = await supabaseAdmin.rpc("get_next_po_number");
             const po_number = numRow as unknown as string;
-
-            const lines = (body.line_items || []) as any[];
-            const subtotal = lines.reduce((s, l) => s + Number(l.line_total ?? l.quantity * l.unit_cost), 0);
 
             const { data: po, error } = await supabaseAdmin.from("purchase_orders").insert({
               po_number,
@@ -124,16 +223,19 @@ export const Route = createFileRoute("/api/command-center")({
             }).select().single();
             if (error) return err(error.message, 500);
 
-            if (lines.length) {
-              await supabaseAdmin.from("po_line_items").insert(lines.map((l, i) => ({
+            const { error: liErr } = await supabaseAdmin.from("po_line_items").insert(
+              built.lines.map((l) => ({
                 po_id: po.id,
+                product_service_id: l.product_service_id,
                 description: l.description,
                 quantity: l.quantity,
-                unit_cost: l.unit_cost,
-                line_total: l.line_total ?? l.quantity * l.unit_cost,
-                sort_order: i,
-              })));
-            }
+                unit_cost: l.rate,
+                line_total: l.line_total,
+                sort_order: l.sort_order,
+              }))
+            );
+            if (liErr) return err(liErr.message, 500);
+
             return ok({ success: true, id: po.id, po_number: po.po_number });
           }
 

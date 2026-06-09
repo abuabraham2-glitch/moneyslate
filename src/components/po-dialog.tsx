@@ -77,6 +77,10 @@ export function POdialog({
     queryKey: ["vendors-mini"],
     queryFn: async () => (await supabase.from("vendors").select("id,company_name,email,contact_name,phone,street,city,state,zip").order("company_name")).data || [],
   });
+  const { data: productsList = [] } = useQuery({
+    queryKey: ["products_services"],
+    queryFn: async () => (await supabase.from("products_services").select("id,name")).data || [],
+  });
   const { data: settings } = useQuery({
     queryKey: ["settings"],
     queryFn: async () => (await supabase.from("settings").select("*").limit(1).single()).data,
@@ -197,7 +201,13 @@ export function POdialog({
         name: form.ship_to_name, street: form.ship_to_street,
         city: form.ship_to_city, state: form.ship_to_state, zip: form.ship_to_zip,
       },
-      lines: lines.map((l) => ({ description: l.description, quantity: Number(l.quantity), price: Number(l.unit_cost ?? 0), total: Number(l.line_total) })),
+      lines: lines.map((l) => ({
+        product_name: productsList.find((p: any) => p.id === l.product_service_id)?.name || "",
+        description: l.description,
+        quantity: Number(l.quantity),
+        price: Number(l.unit_cost ?? 0),
+        total: Number(l.line_total),
+      })),
     }, (settings || {}) as any);
   };
 

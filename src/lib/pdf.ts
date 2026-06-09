@@ -49,15 +49,24 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   const pdf = new jsPDF();
   const isInvoice = doc.type === "invoice";
 
-  // Header
-  pdf.setFontSize(22);
-  pdf.setFont("helvetica", "bold");
-  pdf.text(doc.type === "invoice" ? "INVOICE" : doc.type === "bill" ? "BILL" : "PURCHASE ORDER", 15, 20);
+  const displayNumber = (doc.number || "").replace(/^(INV-|PO-|BILL-)/i, "");
+  const titleText = doc.type === "invoice" ? "INVOICE" : doc.type === "bill" ? "BILL" : "PURCHASE ORDER";
+  const titleLabel = doc.type === "po" ? `${titleText}   PO# ${displayNumber}` : `${titleText} # ${displayNumber}`;
+  pdf.text(titleLabel, 15, 20);
 
-  // Doc number + dates
+  // Left sub-block under the title (invoice: Client PO # + Payment Terms)
   pdf.setFontSize(10);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(`#${doc.number}`, 15, 28);
+  let leftY = 28;
+  if (isInvoice && doc.client_po_number) {
+    pdf.setFont("helvetica", "bold"); pdf.text("Client PO #", 15, leftY);
+    pdf.setFont("helvetica", "normal"); pdf.text(String(doc.client_po_number), 42, leftY);
+    leftY += 6;
+  }
+  if (isInvoice && doc.payment_terms) {
+    pdf.setFont("helvetica", "bold"); pdf.text("Payment Terms:", 15, leftY);
+    pdf.setFont("helvetica", "normal"); pdf.text(String(doc.payment_terms), 50, leftY);
+    leftY += 6;
+  }
 
   // Right-side dates
   const rightX = 195;
@@ -71,12 +80,8 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
     pdf.setFont("helvetica", "normal"); pdf.text(formatDate(doc.due_date), rightX, 26, { align: "right" });
   }
   if (!isInvoice && doc.expected_delivery_date) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Expected:", rightX - 30, 26);
+    pdf.setFont("helvetica", "bold"); pdf.text("Due:", rightX - 30, 26);
     pdf.setFont("helvetica", "normal"); pdf.text(formatDate(doc.expected_delivery_date), rightX, 26, { align: "right" });
-  }
-  if (doc.client_po_number) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Client PO:", rightX - 55, 32);
-    pdf.setFont("helvetica", "normal"); pdf.text(doc.client_po_number, rightX, 32, { align: "right" });
   }
 
   // Company (from)
@@ -146,10 +151,6 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
 
   // Payment terms / notes
   let by = ty2 + 16;
-  if (doc.payment_terms) {
-    pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.text("Payment Terms:", 15, by);
-    pdf.setFont("helvetica", "normal"); pdf.text(doc.payment_terms, 50, by); by += 6;
-  }
   if (doc.notes) {
     pdf.setFont("helvetica", "bold"); pdf.text("Notes:", 15, by); by += 5;
     pdf.setFont("helvetica", "normal");

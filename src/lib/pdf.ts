@@ -51,8 +51,19 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
 
   const displayNumber = (doc.number || "").replace(/^(INV-|PO-|BILL-)/i, "");
   const titleText = doc.type === "invoice" ? "INVOICE" : doc.type === "bill" ? "BILL" : "PURCHASE ORDER";
-  const titleLabel = doc.type === "po" ? `${titleText}   PO# ${displayNumber}` : `${titleText} # ${displayNumber}`;
-  pdf.text(titleLabel, 15, 20);
+  pdf.setTextColor(40, 50, 70);
+  if (doc.type === "po") {
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(22);
+    pdf.text(titleText, 15, 20);
+    pdf.setFontSize(12);
+    pdf.text(`PO# ${displayNumber}`, 15, 28);
+  } else {
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(isInvoice ? 26 : 22);
+    pdf.text(`${titleText} # ${displayNumber}`, 15, 20);
+  }
+  pdf.setTextColor(0, 0, 0);
 
   // Left sub-block under the title (invoice: Client PO # + Payment Terms)
   pdf.setFontSize(10);

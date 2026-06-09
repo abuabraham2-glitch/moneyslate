@@ -204,6 +204,7 @@ export type Database = {
           ap_contact_email: string | null
           ap_contact_name: string | null
           ap_contact_phone: string | null
+          archived: boolean
           billing_city: string | null
           billing_state: string | null
           billing_street: string | null
@@ -227,6 +228,7 @@ export type Database = {
           ap_contact_email?: string | null
           ap_contact_name?: string | null
           ap_contact_phone?: string | null
+          archived?: boolean
           billing_city?: string | null
           billing_state?: string | null
           billing_street?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           ap_contact_email?: string | null
           ap_contact_name?: string | null
           ap_contact_phone?: string | null
+          archived?: boolean
           billing_city?: string | null
           billing_state?: string | null
           billing_street?: string | null

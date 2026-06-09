@@ -251,6 +251,7 @@ export function POdialog({
       <DialogContent
         className="max-w-6xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
+        onOpenAutoFocus={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
         onInteractOutside={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}
         onEscapeKeyDown={(e) => { if (!shouldAllowDialogClose(isDirty)) e.preventDefault(); }}

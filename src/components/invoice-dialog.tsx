@@ -61,6 +61,10 @@ export function InvoiceDialog({
     queryKey: ["clients-mini"],
     queryFn: async () => (await supabase.from("clients").select("id,company_name,contact_email,payment_terms,billing_street,billing_city,billing_state,billing_zip,contact_name,contact_phone").order("company_name")).data || [],
   });
+  const { data: productsList = [] } = useQuery({
+    queryKey: ["products_services"],
+    queryFn: async () => (await supabase.from("products_services").select("id,name")).data || [],
+  });
   const { data: settings } = useQuery({
     queryKey: ["settings"],
     queryFn: async () => (await supabase.from("settings").select("*").limit(1).single()).data,
@@ -188,7 +192,13 @@ export function InvoiceDialog({
         name: c?.company_name || "", contact: c?.contact_name ?? undefined, email: c?.contact_email ?? undefined, phone: c?.contact_phone ?? undefined,
         street: c?.billing_street ?? undefined, city: c?.billing_city ?? undefined, state: c?.billing_state ?? undefined, zip: c?.billing_zip ?? undefined,
       },
-      lines: lines.map((l) => ({ description: l.description, quantity: Number(l.quantity), price: Number(l.unit_price ?? 0), total: Number(l.line_total) })),
+      lines: lines.map((l) => ({
+        product_name: productsList.find((p: any) => p.id === l.product_service_id)?.name || "",
+        description: l.description,
+        quantity: Number(l.quantity),
+        price: Number(l.unit_price ?? 0),
+        total: Number(l.line_total),
+      })),
     }, (settings || {}) as any);
   };
 

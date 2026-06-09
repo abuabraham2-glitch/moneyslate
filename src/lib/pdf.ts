@@ -40,7 +40,7 @@ type Doc = {
     state?: string;
     zip?: string;
   };
-  lines: Array<{ description: string; quantity: number; price: number; total: number }>;
+  lines: Array<{ product_name?: string; description: string; quantity: number; price: number; total: number }>;
   paidStamp?: boolean;
   paidStampColor?: [number, number, number];
 };
@@ -75,7 +75,7 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
     pdf.setFont("helvetica", "normal"); pdf.text(formatDate(doc.expected_delivery_date), rightX, 26, { align: "right" });
   }
   if (doc.client_po_number) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Client PO:", rightX - 30, 32);
+    pdf.setFont("helvetica", "bold"); pdf.text("Client PO:", rightX - 55, 32);
     pdf.setFont("helvetica", "normal"); pdf.text(doc.client_po_number, rightX, 32, { align: "right" });
   }
 
@@ -116,16 +116,17 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   // Line items
   autoTable(pdf, {
     startY: tableStart,
-    head: [["Description", "Qty", isInvoice ? "Unit Price" : "Unit Cost", "Total"]],
+    head: [["Item", "Description", "Qty", isInvoice ? "Unit Price" : "Unit Cost", "Total"]],
     body: doc.lines.map((l) => [
-      l.description,
+      l.product_name || "",
+      l.description || "",
       l.quantity.toString(),
       formatCurrency(l.price),
       formatCurrency(l.total),
     ]),
     headStyles: { fillColor: [40, 50, 70], textColor: 255, fontSize: 9 },
     bodyStyles: { fontSize: 9 },
-    columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" } },
+    columnStyles: { 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right" } },
     theme: "grid",
     margin: { left: 15, right: 15 },
   });

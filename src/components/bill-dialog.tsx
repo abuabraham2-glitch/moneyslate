@@ -158,9 +158,8 @@ export function BillDialog({
         className="max-w-6xl max-h-[92vh] overflow-y-auto"
         hideCloseButton
         onOpenAutoFocus={(e) => {
+          e.preventDefault();
           if (fromPrefillRef.current) {
-            e.preventDefault();
-            // Focus the first line item's Product/Service combobox button
             requestAnimationFrame(() => {
               const root = linesContainerRef.current;
               if (!root) return;

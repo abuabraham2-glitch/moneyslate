@@ -90,9 +90,9 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
     pdf.setFont("helvetica", "bold"); pdf.text("Due:", rightX - 30, 26);
     pdf.setFont("helvetica", "normal"); pdf.text(formatDate(doc.due_date), rightX, 26, { align: "right" });
   }
-  if (!isInvoice && doc.expected_delivery_date) {
+  if (!isInvoice && doc.type === "po") {
     pdf.setFont("helvetica", "bold"); pdf.text("Due:", rightX - 30, 26);
-    pdf.setFont("helvetica", "normal"); pdf.text(formatDate(doc.expected_delivery_date), rightX, 26, { align: "right" });
+    pdf.setFont("helvetica", "normal"); pdf.text(doc.expected_delivery_date ? formatDate(doc.expected_delivery_date) : "", rightX, 26, { align: "right" });
   }
 
   // Company (from)

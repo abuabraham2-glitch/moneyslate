@@ -11,8 +11,9 @@ const cors = {
 const ok = (body: any, status = 200) => new Response(JSON.stringify(body), { status, headers: cors });
 const err = (msg: string, status = 400) => ok({ success: false, error: msg }, status);
 
-const STANDARD_PRODUCTS = ["Print", "Setup Charge", "Screen Change", "Film", "Screen"] as const;
-type StandardProduct = (typeof STANDARD_PRODUCTS)[number];
+const PRINT = "Print";
+const SHARED_PRODUCTS = ["Setup Charge", "Screen", "Screen Change", "Film"] as const;
+const ALL_PRODUCTS = [PRINT, ...SHARED_PRODUCTS] as const;
 
 const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -25,60 +26,118 @@ type BuiltLine = {
   sort_order: number;
 };
 
+type OrderItem = {
+  item_name?: string | null;
+  bottle_size?: string | null;
+  bottle_color?: string | null;
+  material?: string | null;
+  bottle_type?: string | null;
+  num_colors?: number | string | null;
+  quantity?: number | string | null;
+};
+
+// Build the two-line Print description from an item's component fields.
+// PO includes the client name on line 1; invoice does not.
+function buildItemDescription(item: OrderItem, includeClient: boolean, clientName?: string | null): string {
+  const detailParts = [item.bottle_size, item.bottle_color, item.material, item.bottle_type]
+    .map((v) => (v == null ? "" : String(v).trim()))
+    .filter(Boolean);
+  let detail = detailParts.join(" ");
+  const n = Number(item.num_colors);
+  if (Number.isFinite(n) && n > 0) {
+    detail = detail ? `${detail} - ${n} color print` : `${n} color print`;
+  }
+  const itemName = item.item_name == null ? "" : String(item.item_name).trim();
+  const line1 = includeClient && clientName ? `${clientName} - ${itemName}` : itemName;
+  return [line1, detail].filter(Boolean).join("\n");
+}
+
+// Normalize payload into an items array. New shape: body.items[]. Legacy shape:
+// single line_description + order_quantity + num_colors -> wrapped as one item.
+function getItems(body: any): { items: OrderItem[]; legacy: boolean } {
+  if (Array.isArray(body.items) && body.items.length > 0) {
+    return { items: body.items as OrderItem[], legacy: false };
+  }
+  return {
+    items: [
+      {
+        item_name: body.line_description ?? "",
+        num_colors: body.num_colors,
+        quantity: body.order_quantity,
+      },
+    ],
+    legacy: true,
+  };
+}
+
 /**
- * Build the 5 standard lines for an invoice or PO.
- * - rateField: "default_price" for invoices, "default_cost" for POs.
- * - For invoices, the Print line's rate is forced to 0 (caller fills in manually).
- * Returns { lines } on success, or { error } if any product name is missing.
+ * Build all line items: one Print line per order item, then the 4 shared charge
+ * lines (Setup Charge, Screen, Screen Change, Film) once, each qty 1.
+ * rateField: "default_price" (invoice) or "default_cost" (PO).
+ * forcePrintRateZero: true for invoices (Print price filled manually).
+ * includeClient: true for PO (client name prefixes the Print line), false for invoice.
+ * legacy: when true, Print description is the raw line_description verbatim (old behavior).
  */
-async function buildStandardLines(opts: {
+async function buildLines(opts: {
+  body: any;
   rateField: "default_price" | "default_cost";
-  orderQuantity: number;
-  numColors: number;
-  lineDescription: string | null;
   forcePrintRateZero: boolean;
+  includeClient: boolean;
 }): Promise<{ lines?: BuiltLine[]; error?: string }> {
   const { data: products, error: prodErr } = await supabaseAdmin
     .from("products_services")
     .select("id, name, default_price, default_cost")
-    .in("name", STANDARD_PRODUCTS as unknown as string[]);
+    .in("name", ALL_PRODUCTS as unknown as string[]);
   if (prodErr) return { error: prodErr.message };
 
   const byName = new Map<string, any>();
   for (const p of products || []) byName.set(p.name, p);
-
-  for (const name of STANDARD_PRODUCTS) {
-    if (!byName.has(name)) {
-      return { error: `Product not found in Products & Services: ${name}` };
-    }
+  for (const name of ALL_PRODUCTS) {
+    if (!byName.has(name)) return { error: `Product not found in Products & Services: ${name}` };
   }
 
-  const printQty = Number.isFinite(opts.orderQuantity) && opts.orderQuantity > 0 ? opts.orderQuantity : 1;
-  const screenChangeQty = Math.max(0, opts.numColors - 1);
+  const rateOf = (name: string) => Number(byName.get(name)[opts.rateField] ?? 0) || 0;
 
-  const qtyByName: Record<StandardProduct, number> = {
-    "Print": printQty,
-    "Setup Charge": 1,
-    "Screen Change": screenChangeQty,
-    "Film": 0,
-    "Screen": 0,
-  };
+  const { items, legacy } = getItems(opts.body);
+  const clientName = opts.body.client_company_name ?? null;
 
-  const lines: BuiltLine[] = STANDARD_PRODUCTS.map((name, i) => {
-    const p = byName.get(name);
-    let rate = Number(p[opts.rateField] ?? 0) || 0;
-    if (opts.forcePrintRateZero && name === "Print") rate = 0;
-    const quantity = qtyByName[name];
-    const line_total = round2(quantity * rate);
-    return {
-      product_service_id: p.id,
-      description: name === "Print" ? (opts.lineDescription ?? null) : null,
+  const lines: BuiltLine[] = [];
+  let sort = 0;
+
+  // One Print line per item.
+  const printProduct = byName.get(PRINT);
+  for (const item of items) {
+    const qtyRaw = Number(item.quantity);
+    const quantity = Number.isFinite(qtyRaw) && qtyRaw > 0 ? qtyRaw : (legacy ? (Number(opts.body.order_quantity) || 1) : 0);
+    const description = legacy
+      ? (opts.body.line_description ?? null)
+      : buildItemDescription(item, opts.includeClient, clientName);
+    let rate = rateOf(PRINT);
+    if (opts.forcePrintRateZero) rate = 0;
+    lines.push({
+      product_service_id: printProduct.id,
+      description,
       quantity,
       rate,
-      line_total,
-      sort_order: i,
-    };
-  });
+      line_total: round2(quantity * rate),
+      sort_order: sort++,
+    });
+  }
+
+  // Shared charge lines: each qty 1, appended once.
+  for (const name of SHARED_PRODUCTS) {
+    const p = byName.get(name);
+    const rate = rateOf(name);
+    const quantity = 1;
+    lines.push({
+      product_service_id: p.id,
+      description: null,
+      quantity,
+      rate,
+      line_total: round2(quantity * rate),
+      sort_order: sort++,
+    });
+  }
 
   return { lines };
 }
@@ -139,16 +198,11 @@ export const Route = createFileRoute("/api/command-center")({
             const { data: client } = await supabaseAdmin.from("clients").select("id").eq("external_id", body.client_external_id).maybeSingle();
             if (!client) return err("Client not found", 404);
 
-            const orderQuantity = Number(body.order_quantity ?? 1) || 1;
-            const numColorsRaw = Number(body.num_colors);
-            const numColors = Number.isFinite(numColorsRaw) && numColorsRaw > 0 ? numColorsRaw : 1;
-
-            const built = await buildStandardLines({
+            const built = await buildLines({
+              body,
               rateField: "default_price",
-              orderQuantity,
-              numColors,
-              lineDescription: body.line_description ?? null,
               forcePrintRateZero: true,
+              includeClient: false,
             });
             if (built.error || !built.lines) return err(built.error || "Failed to build line items", 500);
 
@@ -189,16 +243,11 @@ export const Route = createFileRoute("/api/command-center")({
             const { data: vendor } = await supabaseAdmin.from("vendors").select("id").eq("external_id", body.vendor_external_id).maybeSingle();
             if (!vendor) return err("Vendor not found", 404);
 
-            const orderQuantity = Number(body.order_quantity ?? 1) || 1;
-            const numColorsRaw = Number(body.num_colors);
-            const numColors = Number.isFinite(numColorsRaw) && numColorsRaw > 0 ? numColorsRaw : 1;
-
-            const built = await buildStandardLines({
+            const built = await buildLines({
+              body,
               rateField: "default_cost",
-              orderQuantity,
-              numColors,
-              lineDescription: body.line_description ?? null,
               forcePrintRateZero: false,
+              includeClient: true,
             });
             if (built.error || !built.lines) return err(built.error || "Failed to build line items", 500);
 

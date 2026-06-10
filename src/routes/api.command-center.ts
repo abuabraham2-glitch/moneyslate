@@ -108,7 +108,8 @@ async function buildLines(opts: {
   const printProduct = byName.get(PRINT);
   for (const item of items) {
     const qtyRaw = Number(item.quantity);
-    const quantity = Number.isFinite(qtyRaw) && qtyRaw > 0 ? qtyRaw : (legacy ? (Number(opts.body.order_quantity) || 1) : 0);
+    const quantity =
+      Number.isFinite(qtyRaw) && qtyRaw > 0 ? qtyRaw : legacy ? Number(opts.body.order_quantity) || 1 : 0;
     const description = legacy
       ? (opts.body.line_description ?? null)
       : buildItemDescription(item, opts.includeClient, clientName);
@@ -150,11 +151,19 @@ export const Route = createFileRoute("/api/command-center")({
         const apiKey = request.headers.get("x-api-key");
         if (!apiKey) return err("Missing X-API-Key header", 401);
 
-        const { data: settings } = await supabaseAdmin.from("settings").select("command_center_api_key").limit(1).single();
+        const { data: settings } = await supabaseAdmin
+          .from("settings")
+          .select("command_center_api_key")
+          .limit(1)
+          .single();
         if (!settings || settings.command_center_api_key !== apiKey) return err("Invalid API key", 401);
 
         let body: any;
-        try { body = await request.json(); } catch { return err("Invalid JSON body"); }
+        try {
+          body = await request.json();
+        } catch {
+          return err("Invalid JSON body");
+        }
 
         const { action } = body || {};
         if (!action) return err("Missing 'action'");
@@ -178,16 +187,25 @@ export const Route = createFileRoute("/api/command-center")({
               ap_contact_name: body.ap_contact?.name,
               ap_contact_email: body.ap_contact?.email,
               ap_contact_phone: body.ap_contact?.phone,
-              payment_terms: body.payment_terms || "Net 30",
+              payment_terms: body.payment_terms || "Due Upon Receipt",
             };
             if (typeof body.archived === "boolean") {
               payload.archived = body.archived;
             }
             if (!payload.company_name || !payload.external_id) return err("company_name and external_id required");
 
-            const { data: existing } = await supabaseAdmin.from("clients").select("id").eq("external_id", payload.external_id).maybeSingle();
+            const { data: existing } = await supabaseAdmin
+              .from("clients")
+              .select("id")
+              .eq("external_id", payload.external_id)
+              .maybeSingle();
             if (existing) {
-              const { data, error } = await supabaseAdmin.from("clients").update(payload).eq("id", existing.id).select().single();
+              const { data, error } = await supabaseAdmin
+                .from("clients")
+                .update(payload)
+                .eq("id", existing.id)
+                .select()
+                .single();
               if (error) return err(error.message, 500);
               return ok({ success: true, id: data.id, action: "updated" });
             } else {
@@ -198,7 +216,11 @@ export const Route = createFileRoute("/api/command-center")({
           }
 
           if (action === "create_invoice") {
-            const { data: client } = await supabaseAdmin.from("clients").select("id").eq("external_id", body.client_external_id).maybeSingle();
+            const { data: client } = await supabaseAdmin
+              .from("clients")
+              .select("id")
+              .eq("external_id", body.client_external_id)
+              .maybeSingle();
             if (!client) return err("Client not found", 404);
 
             const built = await buildLines({
@@ -214,16 +236,20 @@ export const Route = createFileRoute("/api/command-center")({
             const { data: numRow } = await supabaseAdmin.rpc("get_next_invoice_number");
             const invoice_number = numRow as unknown as string;
 
-            const { data: inv, error } = await supabaseAdmin.from("invoices").insert({
-              invoice_number,
-              client_id: client.id,
-              client_po_number: body.client_po_number,
-              due_date: body.due_date,
-              payment_terms: body.payment_terms,
-              subtotal,
-              total: subtotal,
-              status: "draft",
-            }).select().single();
+            const { data: inv, error } = await supabaseAdmin
+              .from("invoices")
+              .insert({
+                invoice_number,
+                client_id: client.id,
+                client_po_number: body.client_po_number,
+                due_date: body.due_date,
+                payment_terms: body.payment_terms,
+                subtotal,
+                total: subtotal,
+                status: "draft",
+              })
+              .select()
+              .single();
             if (error) return err(error.message, 500);
 
             const { error: liErr } = await supabaseAdmin.from("invoice_line_items").insert(
@@ -235,7 +261,7 @@ export const Route = createFileRoute("/api/command-center")({
                 unit_price: l.rate,
                 line_total: l.line_total,
                 sort_order: l.sort_order,
-              }))
+              })),
             );
             if (liErr) return err(liErr.message, 500);
 
@@ -243,7 +269,11 @@ export const Route = createFileRoute("/api/command-center")({
           }
 
           if (action === "create_vendor_po") {
-            const { data: vendor } = await supabaseAdmin.from("vendors").select("id").eq("external_id", body.vendor_external_id).maybeSingle();
+            const { data: vendor } = await supabaseAdmin
+              .from("vendors")
+              .select("id")
+              .eq("external_id", body.vendor_external_id)
+              .maybeSingle();
             if (!vendor) return err("Vendor not found", 404);
 
             const built = await buildLines({
@@ -259,20 +289,24 @@ export const Route = createFileRoute("/api/command-center")({
             const { data: numRow } = await supabaseAdmin.rpc("get_next_po_number");
             const po_number = numRow as unknown as string;
 
-            const { data: po, error } = await supabaseAdmin.from("purchase_orders").insert({
-              po_number,
-              vendor_id: vendor.id,
-              internal_po_number: body.internal_po_number,
-              expected_delivery_date: body.expected_delivery_date,
-              ship_to_name: body.ship_to?.name,
-              ship_to_street: body.ship_to?.street,
-              ship_to_city: body.ship_to?.city,
-              ship_to_state: body.ship_to?.state,
-              ship_to_zip: body.ship_to?.zip,
-              subtotal,
-              total: subtotal,
-              status: "draft",
-            }).select().single();
+            const { data: po, error } = await supabaseAdmin
+              .from("purchase_orders")
+              .insert({
+                po_number,
+                vendor_id: vendor.id,
+                internal_po_number: body.internal_po_number,
+                expected_delivery_date: body.expected_delivery_date,
+                ship_to_name: body.ship_to?.name,
+                ship_to_street: body.ship_to?.street,
+                ship_to_city: body.ship_to?.city,
+                ship_to_state: body.ship_to?.state,
+                ship_to_zip: body.ship_to?.zip,
+                subtotal,
+                total: subtotal,
+                status: "draft",
+              })
+              .select()
+              .single();
             if (error) return err(error.message, 500);
 
             const { error: liErr } = await supabaseAdmin.from("po_line_items").insert(
@@ -284,7 +318,7 @@ export const Route = createFileRoute("/api/command-center")({
                 unit_cost: l.rate,
                 line_total: l.line_total,
                 sort_order: l.sort_order,
-              }))
+              })),
             );
             if (liErr) return err(liErr.message, 500);
 

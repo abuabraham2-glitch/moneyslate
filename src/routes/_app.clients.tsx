@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { StatusBadge } from "@/components/status-badge";
 
 export const Route = createFileRoute("/_app/clients")({ component: ClientsPage });
 
@@ -22,6 +24,7 @@ type ClientRow = {
 function ClientsPage() {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"active" | "archived">("active");
+  const [selected, setSelected] = useState<ClientRow | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["clients"],
@@ -39,6 +42,20 @@ function ClientsPage() {
         ...c,
         totals: totals[c.id] || { invoiced: 0, outstanding: 0 },
       })) as ClientRow[];
+    },
+  });
+
+  const { data: peekInvoices } = useQuery({
+    queryKey: ["client-peek", selected?.id],
+    enabled: !!selected,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("invoices")
+        .select("invoice_number,issue_date,total,status,due_date")
+        .eq("client_id", selected!.id)
+        .order("issue_date", { ascending: false })
+        .limit(3);
+      return data || [];
     },
   });
 
@@ -110,16 +127,14 @@ function ClientsPage() {
           {filtered.map((c) => {
             const outstanding = Number(c.totals.outstanding) || 0;
             return (
-              <Link
+              <div
                 key={c.id}
-                to="/clients/$id"
-                params={{ id: c.id }}
-                className="block"
+                onClick={() => setSelected(c)}
+                className="block cursor-pointer"
                 style={{
                   background: "#2D3838",
                   borderRadius: 12,
                   padding: "1rem 1.1rem",
-                  cursor: "pointer",
                 }}
               >
                 <div style={{ fontSize: 17, fontWeight: 500, color: "#D8E5D2" }}>
@@ -151,11 +166,122 @@ function ClientsPage() {
                     {formatCurrency(outstanding)} owed
                   </div>
                 )}
-              </Link>
+              </div>
             );
           })}
         </div>
       )}
+
+      <Dialog open={selected !== null} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent
+          className="border-0"
+          style={{ maxWidth: 440, background: "#2D3838" }}
+        >
+          {selected && (
+            <div className="flex flex-col gap-4">
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 500, color: "#D8E5D2" }}>
+                  {selected.company_name}
+                </div>
+                <div style={{ fontSize: 13, color: "#A39E96", marginTop: 2 }}>
+                  {selected.contact_name || ""}
+                </div>
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#A39E96",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 6,
+                  }}
+                >
+                  Contact
+                </div>
+                <div style={{ fontSize: 13, color: "#D8E5D2" }}>
+                  {selected.contact_email || "—"}
+                </div>
+                {selected.contact_phone && (
+                  <div style={{ fontSize: 13, color: "#A39E96", marginTop: 2 }}>
+                    {selected.contact_phone}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#A39E96",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 6,
+                  }}
+                >
+                  Recent Invoices
+                </div>
+                {peekInvoices && peekInvoices.length > 0 ? (
+                  <div>
+                    {peekInvoices.map((inv: any, idx: number) => {
+                      const unpaid = inv.status !== "paid";
+                      return (
+                        <div
+                          key={inv.invoice_number + idx}
+                          className="flex items-center justify-between gap-3"
+                          style={{
+                            padding: "8px 0",
+                            borderTop: idx === 0 ? "none" : "0.5px solid #3a4646",
+                          }}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div style={{ fontSize: 13, color: "#D8E5D2" }}>
+                              {inv.invoice_number}
+                            </div>
+                            <div style={{ fontSize: 12, color: "#A39E96" }}>
+                              {formatDate(inv.issue_date)}
+                            </div>
+                            <StatusBadge status={inv.status} dueDate={inv.due_date} />
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 500,
+                              color: unpaid ? "#E24B4A" : "#D8E5D2",
+                            }}
+                          >
+                            {formatCurrency(inv.total)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: "#A39E96" }}>No invoices yet</div>
+                )}
+              </div>
+
+              <Link
+                to="/clients/$id"
+                params={{ id: selected.id }}
+                className="block w-full text-center"
+                style={{
+                  background: "#997839",
+                  color: "#ffffff",
+                  borderRadius: 8,
+                  padding: "10px 16px",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  textDecoration: "none",
+                }}
+              >
+                View full details →
+              </Link>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

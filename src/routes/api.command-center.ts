@@ -180,6 +180,9 @@ export const Route = createFileRoute("/api/command-center")({
               ap_contact_phone: body.ap_contact?.phone,
               payment_terms: body.payment_terms || "Net 30",
             };
+            if (typeof body.archived === "boolean") {
+              payload.archived = body.archived;
+            }
             if (!payload.company_name || !payload.external_id) return err("company_name and external_id required");
 
             const { data: existing } = await supabaseAdmin.from("clients").select("id").eq("external_id", payload.external_id).maybeSingle();

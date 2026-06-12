@@ -223,6 +223,9 @@ export const Route = createFileRoute("/api/command-center")({
               .maybeSingle();
             if (!client) return err("Client not found", 404);
 
+            const invoice_number = String(body.invoice_number || "").trim();
+            if (!invoice_number) return err("invoice_number is required", 400);
+
             const built = await buildLines({
               body,
               rateField: "default_price",
@@ -232,9 +235,6 @@ export const Route = createFileRoute("/api/command-center")({
             if (built.error || !built.lines) return err(built.error || "Failed to build line items", 500);
 
             const subtotal = round2(built.lines.reduce((s, l) => s + l.line_total, 0));
-
-            const { data: numRow } = await supabaseAdmin.rpc("get_next_invoice_number");
-            const invoice_number = numRow as unknown as string;
 
             const { data: inv, error } = await supabaseAdmin
               .from("invoices")
@@ -286,15 +286,15 @@ export const Route = createFileRoute("/api/command-center")({
 
             const subtotal = round2(built.lines.reduce((s, l) => s + l.line_total, 0));
 
-            const { data: numRow } = await supabaseAdmin.rpc("get_next_po_number");
-            const po_number = numRow as unknown as string;
+            const po_number = String(body.internal_po_number || "").trim();
+            if (!po_number) return err("internal_po_number (vendor PO number) is required", 400);
 
             const { data: po, error } = await supabaseAdmin
               .from("purchase_orders")
               .insert({
                 po_number,
                 vendor_id: vendor.id,
-                internal_po_number: body.internal_po_number,
+                internal_po_number: po_number,
                 expected_delivery_date: body.expected_delivery_date,
                 ship_to_name: body.ship_to?.name,
                 ship_to_street: body.ship_to?.street,

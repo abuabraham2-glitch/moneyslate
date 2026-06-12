@@ -69,13 +69,21 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   pdf.setFontSize(10);
   let leftY = 28;
   if (isInvoice && doc.client_po_number) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Client PO #", 15, leftY);
-    pdf.setFont("helvetica", "normal"); pdf.text(String(doc.client_po_number), 42, leftY);
+    pdf.setFont("helvetica", "bold");
+    const label = "Client PO #";
+    pdf.text(label, 15, leftY);
+    const gap = pdf.getTextWidth("  "); // ~2 spaces
+    pdf.setFont("helvetica", "normal");
+    pdf.text(String(doc.client_po_number), 15 + pdf.getTextWidth(label) + gap, leftY);
     leftY += 6;
   }
   if (isInvoice && doc.payment_terms) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Payment Terms:", 15, leftY);
-    pdf.setFont("helvetica", "normal"); pdf.text(String(doc.payment_terms), 50, leftY);
+    pdf.setFont("helvetica", "bold");
+    const label = "Payment Terms:";
+    pdf.text(label, 15, leftY);
+    const gap = pdf.getTextWidth("  "); // ~2 spaces
+    pdf.setFont("helvetica", "normal");
+    pdf.text(String(doc.payment_terms), 15 + pdf.getTextWidth(label) + gap, leftY);
     leftY += 6;
   }
 

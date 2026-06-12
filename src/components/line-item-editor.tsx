@@ -53,6 +53,20 @@ export function LineItemEditor({
   // Block Enter from doing anything in single-line numeric/combobox cells
   const blockEnter = (e: React.KeyboardEvent) => { if (e.key === "Enter") e.preventDefault(); };
 
+  const focusCell = (rowIdx: number, col: string) => {
+    const cell = cellRefs.current[rowIdx]?.[col];
+    const input = cell?.querySelector<HTMLInputElement | HTMLTextAreaElement>("input, textarea");
+    input?.focus();
+  };
+
+  const handleArrowNav = (e: React.KeyboardEvent, idx: number, col: string) => {
+    if (e.key === "ArrowDown") {
+      if (idx < items.length - 1) { e.preventDefault(); focusCell(idx + 1, col); }
+    } else if (e.key === "ArrowUp") {
+      if (idx > 0) { e.preventDefault(); focusCell(idx - 1, col); }
+    }
+  };
+
   return (
     <div className="border border-border rounded-lg overflow-visible">
       <table className="w-full text-sm">

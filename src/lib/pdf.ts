@@ -127,7 +127,11 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   if (doc.party.city || doc.party.state || doc.party.zip) {
     pdf.text(`${doc.party.city || ""}${doc.party.state ? ", " + doc.party.state : ""} ${doc.party.zip || ""}`.trim(), 110, ty); ty += 5;
   }
-  if (doc.party.email) { pdf.text(doc.party.email, 110, ty); ty += 5; }
+  if (doc.party.email) {
+    const primaryEmail = doc.party.email.split(",")[0].trim();
+    if (primaryEmail) { pdf.text(primaryEmail, 110, ty); ty += 5; }
+  }
+
 
   // Ship to (PO)
   if (!isInvoice && doc.ship_to?.street) {

@@ -69,13 +69,21 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   pdf.setFontSize(10);
   let leftY = 28;
   if (isInvoice && doc.client_po_number) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Client PO #", 15, leftY);
-    pdf.setFont("helvetica", "normal"); pdf.text(String(doc.client_po_number), 42, leftY);
+    pdf.setFont("helvetica", "bold");
+    const label = "Client PO #";
+    pdf.text(label, 15, leftY);
+    const gap = pdf.getTextWidth("  "); // ~2 spaces
+    pdf.setFont("helvetica", "normal");
+    pdf.text(String(doc.client_po_number), 15 + pdf.getTextWidth(label) + gap, leftY);
     leftY += 6;
   }
   if (isInvoice && doc.payment_terms) {
-    pdf.setFont("helvetica", "bold"); pdf.text("Payment Terms:", 15, leftY);
-    pdf.setFont("helvetica", "normal"); pdf.text(String(doc.payment_terms), 50, leftY);
+    pdf.setFont("helvetica", "bold");
+    const label = "Payment Terms:";
+    pdf.text(label, 15, leftY);
+    const gap = pdf.getTextWidth("  "); // ~2 spaces
+    pdf.setFont("helvetica", "normal");
+    pdf.text(String(doc.payment_terms), 15 + pdf.getTextWidth(label) + gap, leftY);
     leftY += 6;
   }
 
@@ -101,7 +109,7 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   pdf.text(settings.company_name || "Your Company", 15, 45);
   pdf.setFont("helvetica", "normal");
   let y = 50;
-  if (settings.company_address) { settings.company_address.split("\n").forEach((l) => { pdf.text(l, 15, y); y += 5; }); }
+  if (!isInvoice && settings.company_address) { settings.company_address.split("\n").forEach((l) => { pdf.text(l, 15, y); y += 5; }); }
   if (settings.company_phone) { pdf.text(settings.company_phone, 15, y); y += 5; }
   if (settings.company_email) { pdf.text(settings.company_email, 15, y); y += 5; }
 

@@ -56,12 +56,21 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(22);
     pdf.text(titleText, 15, 20);
+    const tw = pdf.getTextWidth(titleText);
+    pdf.setDrawColor(40, 50, 70);
+    pdf.setLineWidth(0.5);
+    pdf.line(15, 21.5, 15 + tw, 21.5);
     pdf.setFontSize(12);
     pdf.text(`PO# ${displayNumber}`, 15, 28);
   } else {
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(isInvoice ? 26 : 22);
-    pdf.text(`${titleText} # ${displayNumber}`, 15, 20);
+    const titleLine = `${titleText} # ${displayNumber}`;
+    pdf.text(titleLine, 15, 20);
+    const tw = pdf.getTextWidth(titleLine);
+    pdf.setDrawColor(40, 50, 70);
+    pdf.setLineWidth(0.5);
+    pdf.line(15, 21.5, 15 + tw, 21.5);
   }
   pdf.setTextColor(0, 0, 0);
 

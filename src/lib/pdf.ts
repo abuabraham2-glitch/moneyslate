@@ -68,24 +68,27 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   // Left sub-block under the title (invoice: Client PO # + Payment Terms)
   pdf.setFontSize(10);
   let leftY = 28;
+  const LABEL_GAP = 3; // fixed 3mm gap between label and value
   if (isInvoice && doc.client_po_number) {
     pdf.setFont("helvetica", "bold");
     const label = "Client PO #";
     pdf.text(label, 15, leftY);
-    const gap = pdf.getTextWidth("  "); // ~2 spaces
+    const labelWidth = pdf.getTextWidth(label);
     pdf.setFont("helvetica", "normal");
-    pdf.text(String(doc.client_po_number), 15 + pdf.getTextWidth(label) + gap, leftY);
+    pdf.text(String(doc.client_po_number), 15 + labelWidth + LABEL_GAP, leftY);
     leftY += 6;
   }
-  if (isInvoice && doc.payment_terms) {
+  if (isInvoice) {
+    const termsText = (doc.payment_terms && String(doc.payment_terms).trim()) || "Due Upon Receipt";
     pdf.setFont("helvetica", "bold");
     const label = "Payment Terms:";
     pdf.text(label, 15, leftY);
-    const gap = pdf.getTextWidth("  "); // ~2 spaces
+    const labelWidth = pdf.getTextWidth(label);
     pdf.setFont("helvetica", "normal");
-    pdf.text(String(doc.payment_terms), 15 + pdf.getTextWidth(label) + gap, leftY);
+    pdf.text(termsText, 15 + labelWidth + LABEL_GAP, leftY);
     leftY += 6;
   }
+
 
   // Right-side dates
   const rightX = 195;

@@ -31,6 +31,7 @@ export function LineItemEditor({
   };
   const rowRefs = React.useRef<Array<HTMLTableCellElement | null>>([]);
   const focusIdxRef = React.useRef<number | null>(null);
+  const cellRefs = React.useRef<Array<Record<string, HTMLTableCellElement | null>>>([]);
 
   const add = () => {
     focusIdxRef.current = items.length;

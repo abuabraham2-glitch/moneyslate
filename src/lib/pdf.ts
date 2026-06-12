@@ -109,7 +109,7 @@ export function generatePDF(doc: Doc, settings: Settings): jsPDF {
   pdf.text(settings.company_name || "Your Company", 15, 45);
   pdf.setFont("helvetica", "normal");
   let y = 50;
-  if (settings.company_address) { settings.company_address.split("\n").forEach((l) => { pdf.text(l, 15, y); y += 5; }); }
+  if (!isInvoice && settings.company_address) { settings.company_address.split("\n").forEach((l) => { pdf.text(l, 15, y); y += 5; }); }
   if (settings.company_phone) { pdf.text(settings.company_phone, 15, y); y += 5; }
   if (settings.company_email) { pdf.text(settings.company_email, 15, y); y += 5; }
 

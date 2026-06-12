@@ -31,6 +31,7 @@ export function LineItemEditor({
   };
   const rowRefs = React.useRef<Array<HTMLTableCellElement | null>>([]);
   const focusIdxRef = React.useRef<number | null>(null);
+  const cellRefs = React.useRef<Array<Record<string, HTMLTableCellElement | null>>>([]);
 
   const add = () => {
     focusIdxRef.current = items.length;
@@ -51,6 +52,20 @@ export function LineItemEditor({
 
   // Block Enter from doing anything in single-line numeric/combobox cells
   const blockEnter = (e: React.KeyboardEvent) => { if (e.key === "Enter") e.preventDefault(); };
+
+  const focusCell = (rowIdx: number, col: string) => {
+    const cell = cellRefs.current[rowIdx]?.[col];
+    const input = cell?.querySelector<HTMLInputElement | HTMLTextAreaElement>("input, textarea");
+    input?.focus();
+  };
+
+  const handleArrowNav = (e: React.KeyboardEvent, idx: number, col: string) => {
+    if (e.key === "ArrowDown") {
+      if (idx < items.length - 1) { e.preventDefault(); focusCell(idx + 1, col); }
+    } else if (e.key === "ArrowUp") {
+      if (idx > 0) { e.preventDefault(); focusCell(idx - 1, col); }
+    }
+  };
 
   return (
     <div className="border border-border rounded-lg overflow-visible">
@@ -89,7 +104,9 @@ export function LineItemEditor({
                   }}
                 />
               </td>
-              <td className="px-2 py-1.5">
+              <td className="px-2 py-1.5"
+                  ref={(el) => { (cellRefs.current[idx] ??= {}).description = el; }}
+                  onKeyDown={(e) => handleArrowNav(e, idx, "description")}>
                 <Textarea
                   value={it.description}
                   onChange={(e) => update(idx, { description: e.target.value })}
@@ -97,14 +114,18 @@ export function LineItemEditor({
                   className="border-0 shadow-none focus-visible:ring-1 min-h-9 py-1.5"
                 />
               </td>
-              <td className="px-2 py-1.5" onKeyDown={blockEnter}>
+              <td className="px-2 py-1.5"
+                  ref={(el) => { (cellRefs.current[idx] ??= {}).quantity = el; }}
+                  onKeyDown={(e) => { blockEnter(e); handleArrowNav(e, idx, "quantity"); }}>
                 <NumberInput
                   value={it.quantity}
                   onChange={(n) => update(idx, { quantity: n }, "quantity")}
                   className="border-0 shadow-none text-right focus-visible:ring-1"
                 />
               </td>
-              <td className="px-2 py-1.5" onKeyDown={blockEnter}>
+              <td className="px-2 py-1.5"
+                  ref={(el) => { (cellRefs.current[idx] ??= {}).price = el; }}
+                  onKeyDown={(e) => { blockEnter(e); handleArrowNav(e, idx, "price"); }}>
                 <NumberInput
                   value={(it as any)[priceField] ?? 0}
                   onChange={(n) => update(idx, { [priceField]: n } as any, priceField)}
@@ -113,7 +134,9 @@ export function LineItemEditor({
                   className="border-0 shadow-none text-right focus-visible:ring-1"
                 />
               </td>
-              <td className="px-2 py-1.5" onKeyDown={blockEnter}>
+              <td className="px-2 py-1.5"
+                  ref={(el) => { (cellRefs.current[idx] ??= {}).total = el; }}
+                  onKeyDown={(e) => { blockEnter(e); handleArrowNav(e, idx, "total"); }}>
                 <NumberInput
                   value={it.line_total ?? 0}
                   onChange={(n) => update(idx, { line_total: n }, "line_total")}

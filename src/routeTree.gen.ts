@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiInvoiceStatusRouteImport } from './routes/api.invoice-status'
 import { Route as ApiCommandCenterRouteImport } from './routes/api.command-center'
 import { Route as AppVendorsRouteImport } from './routes/_app.vendors'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
@@ -41,6 +42,11 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInvoiceStatusRoute = ApiInvoiceStatusRouteImport.update({
+  id: '/api/invoice-status',
+  path: '/api/invoice-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCommandCenterRoute = ApiCommandCenterRouteImport.update({
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/vendors': typeof AppVendorsRoute
   '/api/command-center': typeof ApiCommandCenterRoute
+  '/api/invoice-status': typeof ApiInvoiceStatusRoute
   '/bills/$id': typeof AppBillsIdRoute
   '/clients/$id': typeof AppClientsIdRoute
   '/invoices/$id': typeof AppInvoicesIdRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/vendors': typeof AppVendorsRoute
   '/api/command-center': typeof ApiCommandCenterRoute
+  '/api/invoice-status': typeof ApiInvoiceStatusRoute
   '/bills/$id': typeof AppBillsIdRoute
   '/clients/$id': typeof AppClientsIdRoute
   '/invoices/$id': typeof AppInvoicesIdRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/vendors': typeof AppVendorsRoute
   '/api/command-center': typeof ApiCommandCenterRoute
+  '/api/invoice-status': typeof ApiInvoiceStatusRoute
   '/_app/bills/$id': typeof AppBillsIdRoute
   '/_app/clients_/$id': typeof AppClientsIdRoute
   '/_app/invoices/$id': typeof AppInvoicesIdRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vendors'
     | '/api/command-center'
+    | '/api/invoice-status'
     | '/bills/$id'
     | '/clients/$id'
     | '/invoices/$id'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vendors'
     | '/api/command-center'
+    | '/api/invoice-status'
     | '/bills/$id'
     | '/clients/$id'
     | '/invoices/$id'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/vendors'
     | '/api/command-center'
+    | '/api/invoice-status'
     | '/_app/bills/$id'
     | '/_app/clients_/$id'
     | '/_app/invoices/$id'
@@ -255,6 +267,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiCommandCenterRoute: typeof ApiCommandCenterRoute
+  ApiInvoiceStatusRoute: typeof ApiInvoiceStatusRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -278,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/invoice-status': {
+      id: '/api/invoice-status'
+      path: '/api/invoice-status'
+      fullPath: '/api/invoice-status'
+      preLoaderRoute: typeof ApiInvoiceStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/command-center': {
@@ -467,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiCommandCenterRoute: ApiCommandCenterRoute,
+  ApiInvoiceStatusRoute: ApiInvoiceStatusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
